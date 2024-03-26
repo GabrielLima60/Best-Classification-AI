@@ -15,7 +15,7 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
     StringBuilder pythonOutput = new StringBuilder();
 
     public Best_Classification_AI() {
-        super("Best-Classifiation-AI");
+        super("Best Classifiation AI");
 
         // Set look and feel to system default
         try {
