@@ -1,18 +1,21 @@
-# Best-Classification-AI
-This project is an extension of my senior thesis.
+# Overview
+Best-Classification-AI is a software able to read a CSV file given by the user and perform analysis on different supervisioned AI classification models and optimization techniques, comparing the resulting F1-Score, processing time and memory usage.
+The results of the analysis are provided in the program though a series of graphs and be extracted at the results table and results image folders.
 
-This is a program that is able to read a CSV given by the user and perform analysis on different supervisioned AI classification models and optimization techniques, comparing the resulting F1-Score, processing time and memory usage.
-The graphs of the analysis are provided though a series of images and be extracted at the results image folder.
-
-Run the .jar file to open the program.
+Run the .jar file to execute the software.
 
 # INSTALLATION
-- Install Java and JDK into your device
-- Install Python into your device and run the following command in the terminal:
-  ```
-  pip install matplotlib seaborn pandas pillow scikit-learn imbalanced-learn'
-  ```
+Prior to running the program, ensure the following dependencies are installed on your device:
+- Java Development Kit (JDK) and Java Runtime Environment (JRE)
+- Python 3
+
+Additionally, install the necessary Python libraries by executing the following command in your terminal:
+```
+pip install matplotlib seaborn pandas pillow scikit-learn imbalanced-learn
+```
 
 # ATENTION
-- Your CSV must allow for supervisioned classification AIs and must have the y (target variable) column as the last column of the CSV. This program does not perform data cleaning.
+- Your CSV must allow for supervisioned classification AIs.
+- The target variable (y) column must be the last column of the CSV.
+- This software does not perform proper data cleaning.
 
