@@ -8,7 +8,10 @@ Run the .jar file to open the program.
 
 # INSTALLATION
 - Install Java and JDK into your device
-- Install Python into your device and run the following command in the terminal: 'pip install matplotlib seaborn pandas pillow scikit-learn imbalanced-learn'
+- Install Python into your device and run the following command in the terminal:
+  ```
+  pip install matplotlib seaborn pandas pillow scikit-learn imbalanced-learn'
+  ```
 
 # ATENTION
 - Your CSV must allow for supervisioned classification AIs and must have the y (target variable) column as the last column of the CSV. This program does not perform data cleaning.
