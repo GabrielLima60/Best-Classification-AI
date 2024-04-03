@@ -4,14 +4,14 @@ The results of the analysis are provided in the program though a series of graph
 
 Run the .jar file to execute the software.
 
-# INSTALLATION
+# installation 
 Prior to running the program, ensure the following dependencies are installed on your device:
 - Java Development Kit (JDK) and Java Runtime Environment (JRE)
 - Python 3
 
 Additionally, install the necessary Python libraries by executing the following command in your terminal:
 ```
-pip install matplotlib seaborn pandas pillow scikit-learn imbalanced-learn
+pip install imbalanced-learn matplotlib seaborn pandas numpy scikit-learn pillow
 ```
 
 # ATENTION
