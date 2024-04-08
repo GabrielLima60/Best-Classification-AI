@@ -1,11 +1,17 @@
-import warnings
-warnings.filterwarnings("ignore")
+'''
+    This code prepares the data and performs the analysis of the given dataset, technique and model.
+'''
 
-import pandas as pd
-import numpy as np
+import warnings
 import time
 import sys
+import psutil
+import time
+import os
+import threading
 import tracemalloc
+import pandas as pd
+import numpy as np
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import f1_score
@@ -27,30 +33,52 @@ from sklearn.decomposition import FastICA
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from imblearn.over_sampling import SMOTE
 
+
+warnings.filterwarnings("ignore")
+
 class Analysis:
-
+    '''
+        This class call the other two classes, Prepare_data and Perform_analysis
+    '''
     def __init__(self, dataframe, technique, model='SVM'):
-        self.prepare_data(dataframe)
-        self.perform_analysis(technique, model)
+        prepared = PrepareData(dataframe)
+        performed = PerformAnalysis(technique, model, prepared.x_train, \
+                                                       prepared.x_test, \
+                                                       prepared.y_train, \
+                                                       prepared.y_test)
+        self.f1_score = performed.f1_score
 
-    def prepare_data(self, dataframe):
-        # Drop 'id' column and shuffle the dataframe
+class PrepareData:
+    '''
+        This class receaves the dataframe and returns the x_train, x_test, y_train and y_test
+    '''
+    def __init__(self, dataframe):
         if 'id' in dataframe.columns:
             dataframe.drop('id', axis=1, inplace=True)
         dataframe = dataframe.sample(frac=1, random_state=42).reset_index(drop=True)
 
         for column in dataframe.columns:
-            dataframe[column] = dataframe[column].apply(lambda x: pd.to_numeric(x, errors='coerce') if isinstance(x, str) and any(char.isdigit() for char in x) else x)
+            dataframe[column] = dataframe[column].apply(lambda x: pd.to_numeric(x, errors='coerce')\
+                                                        if isinstance(x, str) and any(char.isdigit() for char in x) else x)
 
         dataframe = dataframe.dropna()
 
-        # Define X matrix and y column
-        self.X = dataframe.iloc[:, :-1]
+        self.x = dataframe.iloc[:, :-1]
         self.y = dataframe.iloc[:, -1]
 
-    def perform_analysis(self, technique, model):
+        self.x_train, self.x_test, self.y_train, self.y_test = train_test_split(self.x, self.y, test_size=0.20, random_state=42)
 
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X, self.y, test_size=0.20, random_state=42)
+class PerformAnalysis:
+    '''
+        This class performs the analysis and saves the f1_score
+    '''
+    def __init__(self, technique, model, x_train, x_test, y_train, y_test):
+
+        self.x_train = x_train
+        self.x_test = x_test
+        self.y_train = y_train
+        self.y_test = y_test
+        self.y_pred = y_test
 
         if technique == 'PCA':
             self.apply_pca()
@@ -64,80 +92,103 @@ class Analysis:
             self.apply_smote()
         else: # Apply no technique
             pass
-        
+
         self.apply_normalization()
 
         self.f1_score = self.select_model_and_get_f1(model)
 
     def apply_pca(self):
         pca = PCA(n_components=0.95)
-        self.X_train = pca.fit_transform(self.X_train)
-        self.X_test = pca.transform(self.X_test)
+        self.x_train = pca.fit_transform(self.x_train)
+        self.x_test = pca.transform(self.x_test)
 
     def apply_ipca(self):
         pca = PCA()
-        pca.fit(self.X_train)
+        pca.fit(self.x_train)
         n_components = np.argmax(np.cumsum(pca.explained_variance_ratio_) >= 0.95) + 1
         ipca = IncrementalPCA(n_components=n_components)
-        self.X_train = ipca.fit_transform(self.X_train)
-        self.X_test = ipca.transform(self.X_test)
-    
+        self.x_train = ipca.fit_transform(self.x_train)
+        self.x_test = ipca.transform(self.x_test)
+
     def apply_ica(self):
-        n_components = int(self.X_train.shape[1]/2)
+        n_components = int(self.x_train.shape[1]/2)
         ica = FastICA(n_components=n_components, random_state=42)
-        self.X_train = ica.fit_transform(self.X_train)
-        self.X_test = ica.transform(self.X_test)
+        self.x_train = ica.fit_transform(self.x_train)
+        self.x_test = ica.transform(self.x_test)
 
     def apply_lda(self):
         lda = LinearDiscriminantAnalysis()
-        self.X_train = lda.fit_transform(self.X_train, self.y_train)
+        self.x_train = lda.fit_transform(self.x_train, self.y_train)
 
-        self.X_test = lda.transform(self.X_test)
+        self.x_test = lda.transform(self.x_test)
 
     def apply_smote(self):
         smote = SMOTE(random_state=42)
-        self.X_train, self.y_train = smote.fit_resample(self.X_train, self.y_train)  
+        self.x_train, self.y_train = smote.fit_resample(self.x_train, self.y_train)
 
 
     def apply_normalization(self):
         scaler = StandardScaler()
-        self.X_train = scaler.fit_transform(self.X_train)
-        self.X_test = scaler.transform(self.X_test)
+        self.x_train = scaler.fit_transform(self.x_train)
+        self.x_test = scaler.transform(self.x_test)
 
     def select_model_and_get_f1(self, model):
         model_dict = {'Naive Bayes': GaussianNB(),
-                      'SVM': SVC(kernel='linear'),
-                      'MLP': MLPClassifier(hidden_layer_sizes=(50,), activation='relu', solver='adam', max_iter=300),
-                      'Tree': DecisionTreeClassifier(),
+                      'SVM': SVC(random_state = 42),
+                      'MLP': MLPClassifier(random_state = 42),
+                      'Tree': DecisionTreeClassifier(random_state = 42),
                       'KNN': KNeighborsClassifier(),
-                      'LogReg': LogisticRegression(),
-                      'GBC': GradientBoostingClassifier()
+                      'LogReg': LogisticRegression(random_state = 42),
+                      'GBC': GradientBoostingClassifier(random_state = 42)
                      }
-        
+
 
         return self.get_f1_score(model_dict[model])
 
     def get_f1_score(self, classifier):
-        classifier.fit(self.X_train, self.y_train)
-        self.y_pred = classifier.predict(self.X_test)
+        classifier.fit(self.x_train, self.y_train)
+        self.y_pred = classifier.predict(self.x_test)
         return f1_score(self.y_test, self.y_pred, average='weighted')
-    
+
+class MemoryMonitor:
+    def __init__(self, pid, interval=1):
+        self.process = psutil.Process(pid)
+        self.interval = interval
+        self.max_memory_rss = 0  
+
+    def __call__(self):
+        while True:
+            memory_info = self.process.memory_info()
+            rss_mb = memory_info.rss / (1024 * 1024)  # Convert to MB
+            
+            if rss_mb > self.max_memory_rss:
+                self.max_memory_rss = rss_mb
+                
+            time.sleep(self.interval)
 
 
-# We get the parameters passed by the parent script
-dataset = sys.argv[1]
-dataset = pd.read_csv(dataset)
-technique = sys.argv[2]
-model = sys.argv[3]
+# MAIN
 
+given_dataset = sys.argv[1]
+given_dataset = pd.read_csv(given_dataset)
+given_technique = sys.argv[2]
+given_model = sys.argv[3]
 
-# We use tracemalloc snapshots to get the memory used immediately before the execution and after it. 
+# Getting the memory usage
+current_pid = os.getpid()
+memory_monitor = MemoryMonitor(current_pid)
+
+monitor_thread = threading.Thread(target=memory_monitor)
+monitor_thread.daemon = True
+monitor_thread.start()
+
+# We use tracemalloc snapshots to get the memory used immediately before the execution and after it.
 tracemalloc.start()
 start_time = time.time()
 start_snapshot = tracemalloc.take_snapshot()
 
 
-a = Analysis(dataset, technique, model)
+a = Analysis(given_dataset, given_technique, given_model)
 
 
 end_snapshot = tracemalloc.take_snapshot()
@@ -150,6 +201,10 @@ memory_usage = sum(stat.size for stat in diff_snapshot)/1024
 
 processing_time = end_time - start_time
 
-result = str(technique) + "," + str(model) + "," + str(a.f1_score) + "," + str(processing_time) + "," + str(memory_usage)
+result = str(given_technique) + "," + \
+         str(given_model) + "," + \
+         str(a.f1_score) + "," + \
+         str(processing_time) + "," + \
+         str(memory_monitor.max_memory_rss)
 
 print(result)
