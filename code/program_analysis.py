@@ -1,7 +1,3 @@
-'''
-    This code prepares the data and performs the analysis of the given dataset, technique and model.
-'''
-
 import warnings
 import time
 import sys
@@ -151,15 +147,19 @@ class PerformAnalysis:
         return f1_score(self.y_test, self.y_pred, average='weighted')
 
 class MemoryMonitor:
-    def __init__(self, pid, interval=1):
+    def __init__(self, pid, interval=0.001):
         self.process = psutil.Process(pid)
         self.interval = interval
+        self.initial_memory_usage = None
         self.max_memory_rss = 0  
 
     def __call__(self):
         while True:
             memory_info = self.process.memory_info()
             rss_mb = memory_info.rss / (1024 * 1024)  # Convert to MB
+
+            if self.initial_memory_usage is None:
+                self.initial_memory_usage = rss_mb
             
             if rss_mb > self.max_memory_rss:
                 self.max_memory_rss = rss_mb
@@ -182,29 +182,22 @@ monitor_thread = threading.Thread(target=memory_monitor)
 monitor_thread.daemon = True
 monitor_thread.start()
 
-# We use tracemalloc snapshots to get the memory used immediately before the execution and after it.
-tracemalloc.start()
 start_time = time.time()
-start_snapshot = tracemalloc.take_snapshot()
-
 
 a = Analysis(given_dataset, given_technique, given_model)
 
-
-end_snapshot = tracemalloc.take_snapshot()
 end_time = time.time()
-tracemalloc.stop()
-
-# The memory usage is shown in Kibibytes (KiB)
-diff_snapshot = end_snapshot.compare_to(start_snapshot, 'lineno')
-memory_usage = sum(stat.size for stat in diff_snapshot)/1024
 
 processing_time = end_time - start_time
+
+
 
 result = str(given_technique) + "," + \
          str(given_model) + "," + \
          str(a.f1_score) + "," + \
          str(processing_time) + "," + \
-         str(memory_monitor.max_memory_rss)
+         str(memory_monitor.max_memory_rss - memory_monitor.initial_memory_usage)
+
+
 
 print(result)
