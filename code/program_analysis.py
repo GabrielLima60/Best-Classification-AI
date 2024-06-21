@@ -27,7 +27,6 @@ from sklearn.decomposition import PCA
 from sklearn.decomposition import IncrementalPCA
 from sklearn.decomposition import FastICA
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-from imblearn.over_sampling import SMOTE
 
 
 warnings.filterwarnings("ignore")
@@ -84,8 +83,6 @@ class PerformAnalysis:
             self.apply_ica()
         elif technique == 'LDA':
             self.apply_lda()
-        elif technique == 'SMOTE':
-            self.apply_smote()
         else: # Apply no technique
             pass
 
@@ -117,10 +114,6 @@ class PerformAnalysis:
         self.x_train = lda.fit_transform(self.x_train, self.y_train)
 
         self.x_test = lda.transform(self.x_test)
-
-    def apply_smote(self):
-        smote = SMOTE(random_state=42)
-        self.x_train, self.y_train = smote.fit_resample(self.x_train, self.y_train)
 
 
     def apply_normalization(self):
