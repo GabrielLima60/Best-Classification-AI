@@ -1,21 +1,29 @@
 import javax.swing.*;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class Best_Classification_AI extends JFrame implements ActionListener {
     private JFileChooser fileChooser;
-    private JLabel backgroundLabel;
-    private JLabel loadingLabel;
-    List<String> techniques = Arrays.asList("no technique", "PCA", "IncPCA", "ICA", "LDA", "SMOTE");
-    List<String> models = Arrays.asList("Naive Bayes", "SVM", "MLP", "Tree", "KNN", "LogReg");
-    StringBuilder pythonOutput = new StringBuilder();
+    private JPanel currentPage;
+    private JPanel csvSelectionPage;
+    private JPanel analysisConfigPage;
+    private JButton selectCSVButton;
+    private JButton analyzeButton;
+    private List<JCheckBox> modelCheckBoxes;
+    private List<JCheckBox> techniqueCheckBoxes;
+    private JLabel techniquesLabel;
+    private JLabel modelsLabel;
+    private StringBuilder pythonOutput = new StringBuilder();
+
+    private List<String> techniques = Arrays.asList("PCA", "IncPCA", "ICA", "LDA");
+    private List<String> models = Arrays.asList("SVM", "MLP", "Tree", "KNN", "LogReg");
 
     public Best_Classification_AI() {
-        super("Best Classifiation AI");
+        super("Best Classification AI");
 
         // Set look and feel to system default
         try {
@@ -24,75 +32,7 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
             e.printStackTrace();
         }
 
-        String imagePath = "resources\\background.gif";
-        File imageFile = new File(imagePath);
-        String absolutePath = imageFile.getAbsolutePath();
-        ImageIcon backgroundImage = new ImageIcon(absolutePath);
-        // Create a JLabel with the image
-        backgroundLabel = new JLabel(backgroundImage);
-        backgroundLabel.setLayout(new BorderLayout());
-
-        // Create components
-        JButton openButton = new JButton("Analyse All");
-        openButton.addActionListener(this);
-        openButton.setFont(new Font("Lucida Sans Unicode", Font.BOLD, 32));
-
-        // Create two bigger buttons on top
-        JPanel topPanel = new JPanel();
-        topPanel.setOpaque(false);
-
-        JButton Button1 = new JButton("Analyse Models");
-        Button1.addActionListener(this);
-        Button1.setFont(new Font("Lucida Sans Unicode", Font.BOLD, 24));
-        Button1.setPreferredSize(new Dimension(300, 70));
-
-        JButton Button2 = new JButton("Analyse Techniques");
-        Button2.addActionListener(this);
-        Button2.setFont(new Font("Lucida Sans Unicode", Font.BOLD, 24));
-        Button2.setPreferredSize(new Dimension(300, 70));
-
-        // Change layout to GridBagLayout for more flexibility
-        topPanel.setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.insets = new Insets(10, 5, 10, 5);
-        topPanel.add(Button1, gbc);
-
-        gbc.gridx = 1;
-        topPanel.add(Button2, gbc);
-
-        // Layout components
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setOpaque(false);
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(150, 312, 270, 312));
-        mainPanel.add(topPanel, BorderLayout.NORTH);
-
-        // Decrease the size of the "Analyse All" button
-        openButton.setPreferredSize(new Dimension(150, 50));
-
-        // Initialize loadingLabel
-        loadingLabel = new JLabel("Loading...");
-        loadingLabel.setFont(new Font("Lucida Sans Unicode", Font.BOLD, 42));
-        loadingLabel.setForeground(Color.WHITE);
-        loadingLabel.setVisible(false);
-
-        // Add loadingLabel to a new panel
-        JPanel loadingPanel = new JPanel();
-        loadingPanel.setOpaque(false);
-        loadingPanel.add(loadingLabel);
-
-        // Add loadingPanel to mainPanel below the existing components
-        mainPanel.add(loadingPanel, BorderLayout.SOUTH);
-
-        backgroundLabel.add(mainPanel);
-
-        mainPanel.add(openButton, BorderLayout.CENTER);
-
-        // Set the content pane to the background label
-        setContentPane(backgroundLabel);
-
-        // Set file chooser
+        // Initialize file chooser
         fileChooser = new JFileChooser();
         fileChooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
             public boolean accept(File f) {
@@ -104,49 +44,146 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
             }
         });
 
-        // Set fixed size for the window
-        setSize(1280, 720);
-        setResizable(false);
+        // Create CSV selection page
+        createCSVSelectionPage();
 
+        // Create analysis configuration page
+        createAnalysisConfigPage();
 
+        // Set initial page to CSV selection page
+        currentPage = csvSelectionPage;
+
+        // Set up main frame
         ImageIcon icon = new ImageIcon("resources\\icon.png");
         setIconImage(icon.getImage());
+        setContentPane(currentPage);
+        setPreferredSize(new Dimension(1280, 720));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        pack();
         setLocationRelativeTo(null);
         setVisible(true);
     }
 
-    public void actionPerformed(ActionEvent e) {    
-        if (e.getActionCommand().equals("Analyse All")) {
-            openCSV();
-        } else if (e.getActionCommand().equals("Analyse Models")) {
-            techniques = Arrays.asList("no technique");
-            openCSV();
-        } else if (e.getActionCommand().equals("Analyse Techniques")) {
-            models = Arrays.asList("SVM");
-            openCSV();
+    private void createCSVSelectionPage() {
+        csvSelectionPage = new JPanel();
+        csvSelectionPage.setLayout(new BorderLayout());
+        ImageIcon backgroundImage = new ImageIcon("resources/background.gif");
+        JLabel backgroundLabel = new JLabel(backgroundImage);
+        backgroundLabel.setLayout(new BorderLayout());
+
+        selectCSVButton = new JButton("Choose CSV File");
+        selectCSVButton.addActionListener(this);
+        selectCSVButton.setFont(new Font("Lucida Sans Unicode", Font.BOLD, 40));
+        selectCSVButton.setPreferredSize(new Dimension(400, 100));
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setOpaque(false);
+        buttonPanel.add(selectCSVButton);
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(300, 0, 0, 0));
+
+        backgroundLabel.add(buttonPanel, BorderLayout.CENTER);
+        csvSelectionPage.add(backgroundLabel, BorderLayout.CENTER);
+    }
+
+    private void createAnalysisConfigPage() {
+        analysisConfigPage = new JPanel(new BorderLayout());
+        analysisConfigPage.setBackground(Color.WHITE);
+
+        // Adding background image
+        ImageIcon backgroundImage = new ImageIcon("resources/background.gif");
+        JLabel backgroundLabel = new JLabel(backgroundImage);
+        backgroundLabel.setLayout(new BorderLayout());
+
+        JPanel configPanel = new JPanel(new GridLayout(0, 1));
+        configPanel.setOpaque(false);
+        configPanel.setBorder(BorderFactory.createEmptyBorder(60, 20, 300, 20));
+
+        // Models selection panel
+        JPanel modelsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        modelsLabel = new JLabel("Select Models:");
+        modelsLabel.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 28));
+        modelsPanel.add(modelsLabel);
+        modelCheckBoxes = new ArrayList<>();
+        for (String model : models) {
+            JCheckBox checkBox = new JCheckBox(model);
+            checkBox.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 22));
+            modelCheckBoxes.add(checkBox);
+            modelsPanel.add(checkBox);
+        }
+        configPanel.add(modelsPanel);
+
+        // Techniques selection panel
+        JPanel techniquesPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        techniquesLabel = new JLabel("Select Techniques:");
+        techniquesLabel.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 28));
+        techniquesPanel.add(techniquesLabel);
+        techniqueCheckBoxes = new ArrayList<>();
+        for (String technique : techniques) {
+            JCheckBox checkBox = new JCheckBox(technique);
+            checkBox.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 22));
+            techniqueCheckBoxes.add(checkBox);
+            techniquesPanel.add(checkBox);
+        }
+        configPanel.add(techniquesPanel);
+
+        // Analyze button panel
+        analyzeButton = new JButton("Start Analysis");
+        analyzeButton.addActionListener(this);
+        analyzeButton.setFont(new Font("Lucida Sans Unicode", Font.BOLD, 40));
+        analyzeButton.setPreferredSize(new Dimension(400, 100));
+        JPanel analyzePanel = new JPanel();
+        analyzePanel.setOpaque(false);
+        analyzePanel.add(analyzeButton);
+        configPanel.add(analyzePanel);
+
+        backgroundLabel.add(configPanel, BorderLayout.CENTER);
+        analysisConfigPage.add(backgroundLabel, BorderLayout.CENTER);
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == selectCSVButton) {
+            openCSVSelection();
+        } else if (e.getSource() == analyzeButton) {
+            performAnalysis();
         }
     }
 
-    private void openCSV() {
-        loadingLabel.setVisible(true);
-
+    private void openCSVSelection() {
         int returnVal = fileChooser.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-            handleCSV(fileChooser.getSelectedFile());
-        }
-        else {
-            loadingLabel.setVisible(false);
+            currentPage.setVisible(false);
+            currentPage = analysisConfigPage;
+            setContentPane(currentPage);
+            revalidate();
+            repaint();
         }
     }
 
-    private void handleCSV(File file) {
+    private void performAnalysis() {
+        
+        List<String> selectedModels = new ArrayList<>();
+        selectedModels.add("Naive Bayes");
+        for (JCheckBox checkBox : modelCheckBoxes) {
+            if (checkBox.isSelected()) {
+                selectedModels.add(checkBox.getText());
+            }
+        }
+
+        // Get selected technique checkboxes
+        List<String> selectedTechniques = new ArrayList<>();
+        selectedTechniques.add("no technique");
+        for (JCheckBox checkBox : techniqueCheckBoxes) {
+            if (checkBox.isSelected()) {
+                selectedTechniques.add(checkBox.getText());
+            }
+        }
+        File selectedFile = fileChooser.getSelectedFile();
+        
         try {
             pythonOutput.append("technique,model,f1_score,processing_time,memory_usage").append("\n");
-            for (String technique : techniques) {
-                for (String model : models) {
+            for (String technique : selectedTechniques) {
+                for (String model : selectedModels) {
                     // Execute the Python script passing the CSV file path
-                    ProcessBuilder pb = new ProcessBuilder("python", "code\\program_analysis.py", file.getAbsolutePath(), technique, model);
+                    ProcessBuilder pb = new ProcessBuilder("python", "code\\program_analysis.py", selectedFile.getAbsolutePath(), technique, model);
                     pb.redirectErrorStream(true);
                     Process process = pb.start();
 
@@ -161,11 +198,11 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
                     int exitCode = process.waitFor();
                     if (exitCode != 0) {
                         JOptionPane.showMessageDialog(this, "Error analysis script", "Error", JOptionPane.ERROR_MESSAGE);
+                        System.exit(0);
                     }
                 }
             }
             
-
             String returnedString = pythonOutput.toString();
 
             // Save the returned string as a CSV file
@@ -202,6 +239,7 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
         } catch (IOException | InterruptedException ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "Error running Python script: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            System.exit(0);
         }
     }
 
