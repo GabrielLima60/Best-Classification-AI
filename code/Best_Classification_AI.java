@@ -5,6 +5,8 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.swing.text.NumberFormatter;
+import java.text.NumberFormat;
 
 public class Best_Classification_AI extends JFrame implements ActionListener {
     private JFileChooser fileChooser;
@@ -15,12 +17,20 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
     private JButton analyzeButton;
     private List<JCheckBox> modelCheckBoxes;
     private List<JCheckBox> techniqueCheckBoxes;
+    private List<JCheckBox> parameterCheckBoxes;
     private JLabel techniquesLabel;
     private JLabel modelsLabel;
     private StringBuilder pythonOutput = new StringBuilder();
 
     private List<String> techniques = Arrays.asList("PCA", "IncPCA", "ICA", "LDA");
     private List<String> models = Arrays.asList("SVM", "MLP", "Tree", "KNN", "LogReg");
+    private JRadioButton gridSearchRadioButton;
+    private JRadioButton randomSearchRadioButton;
+    private String selectedOptimization;
+    private String selectedCrossValidation;
+    private JFormattedTextField iterationsField;
+    private String numberOfIterations;
+    private List<String> parameters_analysed = Arrays.asList("F1_Score", "Processing Time", "ROC Curve", "Memory Usage", "Precision", "Recall");
 
     public Best_Classification_AI() {
         super("Best Classification AI");
@@ -95,7 +105,7 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
 
         JPanel configPanel = new JPanel(new GridLayout(0, 1));
         configPanel.setOpaque(false);
-        configPanel.setBorder(BorderFactory.createEmptyBorder(60, 20, 300, 20));
+        configPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         // Models selection panel
         JPanel modelsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -124,6 +134,88 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
             techniquesPanel.add(checkBox);
         }
         configPanel.add(techniquesPanel);
+
+        // Optimization selection panel
+        JPanel optimizationPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JLabel optimizationLabel = new JLabel("Optimization:");
+        optimizationLabel.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 28));
+        optimizationPanel.add(optimizationLabel);
+        JRadioButton gridSearchRadioButton = new JRadioButton("Grid Search");
+        gridSearchRadioButton.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 22));
+        JRadioButton randomSearchRadioButton = new JRadioButton("Random Search");
+        randomSearchRadioButton.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 22));
+        ButtonGroup optimizationGroup = new ButtonGroup();
+        optimizationGroup.add(gridSearchRadioButton);
+        optimizationGroup.add(randomSearchRadioButton);
+        optimizationPanel.add(gridSearchRadioButton);
+        optimizationPanel.add(randomSearchRadioButton);
+
+        gridSearchRadioButton.addActionListener(e -> selectedOptimization = "Grid Search");
+        randomSearchRadioButton.addActionListener(e -> selectedOptimization = "Random Search");
+
+        gridSearchRadioButton.setSelected(true);
+        selectedOptimization = "Grid Search";
+        
+        configPanel.add(optimizationPanel);
+
+        // Cross Validation selection panel
+        JPanel crossValidationPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JLabel crossValidationLabel = new JLabel("Cross Validation:");
+        crossValidationLabel.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 28));
+        crossValidationPanel.add(crossValidationLabel);
+        JRadioButton kFoldRadioButton = new JRadioButton("K-Fold");
+        kFoldRadioButton.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 22));
+        JRadioButton holdOutRadioButton = new JRadioButton("Hold-Out");
+        holdOutRadioButton.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 22));
+        ButtonGroup crossValidationGroup = new ButtonGroup();
+        crossValidationGroup.add(kFoldRadioButton);
+        crossValidationGroup.add(holdOutRadioButton);
+        crossValidationPanel.add(kFoldRadioButton);
+        crossValidationPanel.add(holdOutRadioButton);
+
+        kFoldRadioButton.addActionListener(e -> selectedOptimization = "K-Fold");
+        holdOutRadioButton.addActionListener(e -> selectedOptimization = "Hold-Out");
+
+        kFoldRadioButton.setSelected(true);
+        selectedCrossValidation = "K-Fold";
+
+        configPanel.add(crossValidationPanel);
+
+        // Number of iterections selection panel
+        JPanel iterationsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JLabel iterationsLabel = new JLabel("Number of Iterations:");
+        iterationsLabel.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 28));
+        NumberFormat integerFormat = NumberFormat.getIntegerInstance();
+        integerFormat.setGroupingUsed(false);
+        NumberFormatter numberFormatter = new NumberFormatter(integerFormat);
+        numberFormatter.setValueClass(Integer.class);
+        numberFormatter.setMinimum(0);
+        numberFormatter.setMaximum(999);
+        numberFormatter.setAllowsInvalid(false);
+        JFormattedTextField iterationsField = new JFormattedTextField(numberFormatter);
+        iterationsField.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 22));
+        iterationsField.setColumns(10);
+        iterationsField.setValue(10); // Default value
+        iterationsPanel.add(iterationsLabel);
+        iterationsPanel.add(iterationsField);
+        configPanel.add(iterationsPanel);
+
+
+
+        // Parameters Analysed selection panel
+        JPanel parametersPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JLabel parametersLabel = new JLabel("Parameters Analysed:");
+        parametersLabel.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 28));
+        parametersPanel.add(parametersLabel);
+        List<JCheckBox> parameterCheckBoxes = new ArrayList<>();
+        String[] parameters = {"F1-Score", "Processing Time", "ROC Curve", "Memory usage", "Precision", "Recall"};
+        for (String parameter : parameters) {
+            JCheckBox checkBox = new JCheckBox(parameter);
+            checkBox.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 22));
+            parameterCheckBoxes.add(checkBox);
+            parametersPanel.add(checkBox);
+        }
+        configPanel.add(parametersPanel);
 
         // Analyze button panel
         analyzeButton = new JButton("Start Analysis");
@@ -159,7 +251,8 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
     }
 
     private void performAnalysis() {
-        
+
+        // Get selected models
         List<String> selectedModels = new ArrayList<>();
         selectedModels.add("Naive Bayes");
         for (JCheckBox checkBox : modelCheckBoxes) {
@@ -168,7 +261,7 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
             }
         }
 
-        // Get selected technique checkboxes
+        // Get selected techniques
         List<String> selectedTechniques = new ArrayList<>();
         selectedTechniques.add("no technique");
         for (JCheckBox checkBox : techniqueCheckBoxes) {
@@ -176,14 +269,30 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
                 selectedTechniques.add(checkBox.getText());
             }
         }
+        
+        // Get selected number of iteractions
+        numberOfIterations = iterationsField.getText();
+
+        // Get selected parameters
+        List<String> selectedParameters = new ArrayList<>();
+        for (JCheckBox checkBox : parameterCheckBoxes) {
+            if (checkBox.isSelected()) {
+                selectedParameters.add(checkBox.getText());
+            }
+        }
+        if (selectedParameters.isEmpty()){
+            selectedParameters.add("Naive Bayes");
+        }
+        String parameters = String.join(",", selectedParameters);
+
         File selectedFile = fileChooser.getSelectedFile();
         
         try {
-            pythonOutput.append("technique,model,f1_score,processing_time,memory_usage").append("\n");
+            pythonOutput.append(parameters).append("\n");
             for (String technique : selectedTechniques) {
                 for (String model : selectedModels) {
                     // Execute the Python script passing the CSV file path
-                    ProcessBuilder pb = new ProcessBuilder("python", "code\\program_analysis.py", selectedFile.getAbsolutePath(), technique, model);
+                    ProcessBuilder pb = new ProcessBuilder("python", "code\\program_analysis.py", selectedFile.getAbsolutePath(), technique, model, selectedOptimization, selectedCrossValidation, numberOfIterations, parameters);
                     pb.redirectErrorStream(true);
                     Process process = pb.start();
 
