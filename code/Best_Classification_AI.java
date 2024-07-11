@@ -13,6 +13,7 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
     private JPanel currentPage;
     private JPanel csvSelectionPage;
     private JPanel analysisConfigPage;
+    private JPanel loadingPage;
     private JButton selectCSVButton;
     private JButton analyzeButton;
     private List<JCheckBox> modelCheckBoxes;
@@ -20,17 +21,17 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
     private List<JCheckBox> parameterCheckBoxes;
     private JLabel techniquesLabel;
     private JLabel modelsLabel;
+    private JLabel topLoadingLabel;
+    private JLabel bottomLoadingLabel;
     private StringBuilder pythonOutput = new StringBuilder();
 
     private List<String> techniques = Arrays.asList("PCA", "IncPCA", "ICA", "LDA");
     private List<String> models = Arrays.asList("SVM", "MLP", "Tree", "KNN", "LogReg");
-    private JRadioButton gridSearchRadioButton;
-    private JRadioButton randomSearchRadioButton;
     private String selectedOptimization;
     private String selectedCrossValidation;
     private JFormattedTextField iterationsField;
-    private String numberOfIterations;
-    private List<String> parameters_analysed = Arrays.asList("F1_Score", "Processing Time", "ROC Curve", "Memory Usage", "Precision", "Recall");
+    private int numberOfIterations;
+    private List<String> parameters = Arrays.asList("F1_Score", "Processing Time", "ROC Curve", "Memory Usage", "Precision", "Recall");
 
     public Best_Classification_AI() {
         super("Best Classification AI");
@@ -59,6 +60,9 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
 
         // Create analysis configuration page
         createAnalysisConfigPage();
+
+        //Create loading page
+        createLoadingPage();
 
         // Set initial page to CSV selection page
         currentPage = csvSelectionPage;
@@ -192,7 +196,7 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
         numberFormatter.setMinimum(0);
         numberFormatter.setMaximum(999);
         numberFormatter.setAllowsInvalid(false);
-        JFormattedTextField iterationsField = new JFormattedTextField(numberFormatter);
+        iterationsField = new JFormattedTextField(numberFormatter);
         iterationsField.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 22));
         iterationsField.setColumns(10);
         iterationsField.setValue(10); // Default value
@@ -207,8 +211,7 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
         JLabel parametersLabel = new JLabel("Parameters Analysed:");
         parametersLabel.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 28));
         parametersPanel.add(parametersLabel);
-        List<JCheckBox> parameterCheckBoxes = new ArrayList<>();
-        String[] parameters = {"F1-Score", "Processing Time", "ROC Curve", "Memory usage", "Precision", "Recall"};
+        parameterCheckBoxes = new ArrayList<>();
         for (String parameter : parameters) {
             JCheckBox checkBox = new JCheckBox(parameter);
             checkBox.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 22));
@@ -231,11 +234,56 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
         analysisConfigPage.add(backgroundLabel, BorderLayout.CENTER);
     }
 
+    private void createLoadingPage() {
+        loadingPage = new JPanel(new BorderLayout());
+        loadingPage.setBackground(Color.WHITE);
+
+        // Adding background image
+        ImageIcon backgroundImage = new ImageIcon("resources/background.gif");
+        JLabel backgroundLabel = new JLabel(backgroundImage);
+        backgroundLabel.setLayout(new BorderLayout());
+
+        JPanel loadingPanel = new JPanel(new GridLayout(0, 1));
+        loadingPanel.setOpaque(false);
+        loadingPanel.setBorder(BorderFactory.createEmptyBorder(120, 80, 120, 80));
+
+        JPanel textPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        topLoadingLabel = new JLabel("Loading...");
+        topLoadingLabel.setFont(new Font("Lucida Sans Unicode", Font.BOLD, 100));
+        textPanel.add(topLoadingLabel);
+
+        loadingPanel.add(textPanel);
+
+        JPanel bottomTextPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        bottomLoadingLabel = new JLabel("<html>This analysis program may take hours to finish<br/>Leave it running in the background<br/><br/>Results will be available at Best-Classification-AI/results table<br/>The graphs will be available at Best-Classification-AI/results image</html>");
+        bottomLoadingLabel.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 24));
+        bottomTextPanel.add(bottomLoadingLabel);
+
+        loadingPanel.add(bottomTextPanel);
+
+        backgroundLabel.add(loadingPanel, BorderLayout.CENTER);
+        loadingPage.add(backgroundLabel, BorderLayout.CENTER);
+    }
+
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == selectCSVButton) {
             openCSVSelection();
         } else if (e.getSource() == analyzeButton) {
-            performAnalysis();
+
+            currentPage = loadingPage;
+            setContentPane(currentPage);
+            revalidate();
+            repaint();
+
+            // Start analysis in a background thread
+            SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+                @Override
+                protected Void doInBackground() {
+                    performAnalysis();
+                    return null;
+                }
+            };
+            worker.execute();
         }
     }
 
@@ -271,7 +319,13 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
         }
         
         // Get selected number of iteractions
-        numberOfIterations = iterationsField.getText();
+        Object value = iterationsField.getValue();
+        if (value instanceof Number) {
+            numberOfIterations = ((Number) value).intValue();
+        }
+        else {
+            numberOfIterations = 10;
+        }
 
         // Get selected parameters
         List<String> selectedParameters = new ArrayList<>();
@@ -285,29 +339,33 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
         }
         String parameters = String.join(",", selectedParameters);
 
+        // Get selected file
         File selectedFile = fileChooser.getSelectedFile();
         
         try {
             pythonOutput.append(parameters).append("\n");
             for (String technique : selectedTechniques) {
                 for (String model : selectedModels) {
-                    // Execute the Python script passing the CSV file path
-                    ProcessBuilder pb = new ProcessBuilder("python", "code\\program_analysis.py", selectedFile.getAbsolutePath(), technique, model, selectedOptimization, selectedCrossValidation, numberOfIterations, parameters);
-                    pb.redirectErrorStream(true);
-                    Process process = pb.start();
+                    for (int i = 0; i < numberOfIterations; i++) {
 
-                    // Read the output from the Python script
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        pythonOutput.append(line).append("\n");
-                    }
+                        // Execute the Python script passing the CSV file path
+                        ProcessBuilder pb = new ProcessBuilder("python", "code\\program_analysis.py", selectedFile.getAbsolutePath(), technique, model, selectedOptimization, selectedCrossValidation, parameters);
+                        pb.redirectErrorStream(true);
+                        Process process = pb.start();
 
-                    // Wait for the process to finish
-                    int exitCode = process.waitFor();
-                    if (exitCode != 0) {
-                        JOptionPane.showMessageDialog(this, "Error analysis script", "Error", JOptionPane.ERROR_MESSAGE);
-                        System.exit(0);
+                        // Read the output from the Python script
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            pythonOutput.append(line).append("\n");
+                        }
+
+                        // Wait for the process to finish
+                        int exitCode = process.waitFor();
+                        if (exitCode != 0) {
+                            JOptionPane.showMessageDialog(this, "Error analysis script", "Error", JOptionPane.ERROR_MESSAGE);
+                            System.exit(0);
+                        }
                     }
                 }
             }
