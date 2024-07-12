@@ -31,7 +31,7 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
     private String selectedCrossValidation;
     private JFormattedTextField iterationsField;
     private int numberOfIterations;
-    private List<String> parameters = Arrays.asList("F1_Score", "Processing Time", "ROC Curve", "Memory Usage", "Precision", "Recall");
+    private List<String> parameters = Arrays.asList("F1-Score", "Processing Time", "ROC Curve", "Memory Usage", "Precision", "Recall");
 
     public Best_Classification_AI() {
         super("Best Classification AI");
@@ -335,7 +335,7 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
             }
         }
         if (selectedParameters.isEmpty()){
-            selectedParameters.add("Naive Bayes");
+            selectedParameters.add("F1-Score");
         }
         String parameters = String.join(",", selectedParameters);
 
@@ -343,7 +343,7 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
         File selectedFile = fileChooser.getSelectedFile();
         
         try {
-            pythonOutput.append(parameters).append("\n");
+            pythonOutput.append("technique,model," + parameters).append("\n");
             for (String technique : selectedTechniques) {
                 for (String model : selectedModels) {
                     for (int i = 0; i < numberOfIterations; i++) {
@@ -363,8 +363,8 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
                         // Wait for the process to finish
                         int exitCode = process.waitFor();
                         if (exitCode != 0) {
-                            JOptionPane.showMessageDialog(this, "Error analysis script", "Error", JOptionPane.ERROR_MESSAGE);
-                            System.exit(0);
+                            JOptionPane.showMessageDialog(this, "Error on the analysis script", "Error", JOptionPane.ERROR_MESSAGE);
+                            //System.exit(0);
                         }
                     }
                 }
@@ -385,7 +385,7 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
 
              int exitCode = process.waitFor();
             if (exitCode != 0) {
-                JOptionPane.showMessageDialog(this, "Error plot script", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Error on the plot script", "Error", JOptionPane.ERROR_MESSAGE);
             }
 
             // Show returned image
