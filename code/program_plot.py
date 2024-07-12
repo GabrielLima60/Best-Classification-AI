@@ -8,7 +8,7 @@ from PIL import Image
 def plot():
     dataset = pd.read_csv('results table\\results.csv')
 
-    metrics = ["f1_score", "processing_time", "memory_usage"]
+    metrics = ["F1-Score", "Processing Time", "Memory Usage"]
     titles = ["F1 Score Comparison", "Processing Time Comparison (seconds)", "Memory Usage Comparison (MB)"]
 
     fig, axes = plt.subplots(len(metrics), 1, figsize=(10, 5 * len(metrics)), dpi=120)
