@@ -8,8 +8,8 @@ import threading
 import pandas as pd
 import numpy as np
 
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import f1_score
+from sklearn.preprocessing import StandardScaler, LabelBinarizer
+from sklearn.metrics import f1_score, roc_curve, auc, recall_score, precision_score
 
 
 from sklearn.model_selection import train_test_split
@@ -21,16 +21,11 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.naive_bayes import GaussianNB
 
+from sklearn.decomposition import PCA, IncrementalPCA, FastICA
 
-from sklearn.decomposition import PCA
-from sklearn.decomposition import IncrementalPCA
-from sklearn.decomposition import FastICA
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-from sklearn.model_selection import RandomizedSearchCV
-from sklearn.model_selection import GridSearchCV
-from sklearn.model_selection import KFold
-from scipy.stats import randint
-from scipy.stats import uniform
+from sklearn.model_selection import RandomizedSearchCV, GridSearchCV, KFold
+from scipy.stats import randint, uniform
 
 
 warnings.filterwarnings("ignore")
@@ -49,10 +44,17 @@ class Analysis:
                                                                         prepared.y_train, \
                                                                         prepared.y_test)
             self.f1_score = performed.f1_score
+            self.precision = performed.precision
+            self.recall = performed.recall
+            self.roc_auc = performed.roc_auc
 
         elif cross_validation == 'K-Fold': 
             
             f1_score_list = []
+            precision_list = []
+            recall_list = []
+            roc_auc_list = []
+
             kf = KFold(n_splits=5)
 
             for train_index, test_index in kf.split(prepared.x):
@@ -64,7 +66,14 @@ class Analysis:
                                                                             y_train, \
                                                                             y_test)
                 f1_score_list.append(performed.f1_score)
+                precision_list.append(performed.precision)
+                recall_list.append(performed.recall)
+                roc_auc_list.append(performed.roc_auc)
+
             self.f1_score = sum(f1_score_list) / len(f1_score_list)
+            self.precision = sum(precision_list) / len(precision_list)
+            self.recall = sum(recall_list) / len(recall_list)
+            self.roc_auc = sum(roc_auc_list) / len(roc_auc_list)
                 
 
         else:
@@ -116,7 +125,7 @@ class PerformAnalysis:
 
         self.apply_normalization()
 
-        self.f1_score = self.select_model_and_get_f1(model, optimization)
+        self.select_model(model, optimization)
 
     def apply_pca(self):
         pca = PCA(n_components=0.95)
@@ -149,7 +158,7 @@ class PerformAnalysis:
         self.X_train = scaler.fit_transform(self.X_train)
         self.X_test = scaler.transform(self.X_test)
 
-    def select_model_and_get_f1(self, model, optimization):
+    def select_model(self, model, optimization):
         model_dict = {'Naive Bayes': GaussianNB(),
                       'SVM': SVC(),
                       'MLP': MLPClassifier(),
@@ -187,12 +196,40 @@ class PerformAnalysis:
             raise ValueError('Wrong optimization name given')
 
 
-        return self.get_f1_score(optimized_model)
+        self.get_metrics(optimized_model)
 
-    def get_f1_score(self, classifier):
+    def get_metrics(self, classifier):
         classifier.fit(self.X_train, self.y_train)
         self.y_pred = classifier.predict(self.X_test)
-        return f1_score(self.y_test, self.y_pred, average='weighted')
+        y_pred_proba = classifier.predict_proba(self.X_test)
+        
+        self.f1_score = f1_score(self.y_test, self.y_pred, average='weighted')
+        self.recall = recall_score(self.y_test, self.y_pred, average='weighted')
+        self.precision = precision_score(self.y_test, self.y_pred, average='weighted')
+
+        label_binarizer = LabelBinarizer()
+        y_true_binary = label_binarizer.fit_transform(self.y_test)
+
+        fpr = {}
+        tpr = {}
+        roc_auc = {}
+        n_classes = len(label_binarizer.classes_)
+
+        if n_classes > 2:
+            for i in range(n_classes):
+                fpr[i], tpr[i], _ = roc_curve(y_true_binary[:, i], y_pred_proba[:, i])
+                roc_auc[i] = auc(fpr[i], tpr[i])
+            self.roc_auc = np.mean(list(roc_auc.values()))
+        elif n_classes == 2:
+            fpr, tpr, _ = roc_curve(y_true_binary[:, 0], y_pred_proba[:, 1])  # assuming binary classification
+            self.roc_auc = auc(fpr, tpr)
+        elif n_classes == 1:
+            fpr, tpr, _ = roc_curve(y_true_binary.ravel(), y_pred_proba.ravel())
+            self.roc_auc = auc(fpr, tpr)
+        else:
+            raise ValueError("Number of classes should be at least 1 for ROC AUC calculation.")
+
+
 
 class MemoryMonitor:
     def __init__(self, pid, interval=0.001):
@@ -241,10 +278,21 @@ end_time = time.time()
 
 processing_time = end_time - start_time
 
-result = str(given_technique) + "," + \
-         str(given_model) + "," + \
-         str(a.f1_score) + "," + \
-         str(processing_time) + "," + \
-         str(memory_monitor.max_memory_rss - memory_monitor.initial_memory_usage)
+
+given_parameters = given_parameters.split(',')
+result = str(given_technique) + "," +  str(given_model)
+
+if 'F1-Score' in given_parameters:
+    result = result + "," + str(a.f1_score) 
+if 'Processing Time' in given_parameters:
+    result = result + "," + str(processing_time) 
+if 'ROC AUC' in given_parameters:
+    result = result + "," + str(a.roc_auc)
+if 'Memory Usage' in given_parameters:
+    result = result + "," + str(memory_monitor.max_memory_rss - memory_monitor.initial_memory_usage) 
+if 'Precision' in given_parameters:
+    result = result + "," + str(a.precision)
+if 'Recall' in given_parameters:
+    result = result + "," + str(a.recall)
 
 print(result)
