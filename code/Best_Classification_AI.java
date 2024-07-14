@@ -31,7 +31,7 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
     private String selectedCrossValidation;
     private JFormattedTextField iterationsField;
     private int numberOfIterations;
-    private List<String> parameters = Arrays.asList("F1-Score", "Processing Time", "ROC Curve", "Memory Usage", "Precision", "Recall");
+    private List<String> parameters = Arrays.asList("F1-Score", "Processing Time", "ROC AUC", "Memory Usage", "Precision", "Recall");
 
     public Best_Classification_AI() {
         super("Best Classification AI");
