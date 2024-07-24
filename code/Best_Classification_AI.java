@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.ArrayList;
+
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.text.NumberFormatter;
@@ -177,8 +178,8 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
         crossValidationPanel.add(kFoldRadioButton);
         crossValidationPanel.add(holdOutRadioButton);
 
-        kFoldRadioButton.addActionListener(e -> selectedOptimization = "K-Fold");
-        holdOutRadioButton.addActionListener(e -> selectedOptimization = "Hold-Out");
+        kFoldRadioButton.addActionListener(e -> selectedCrossValidation = "K-Fold");
+        holdOutRadioButton.addActionListener(e -> selectedCrossValidation = "Hold-Out");
 
         kFoldRadioButton.setSelected(true);
         selectedCrossValidation = "K-Fold";
