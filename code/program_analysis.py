@@ -9,7 +9,7 @@ import pandas as pd
 import numpy as np
 
 from sklearn.preprocessing import StandardScaler, LabelBinarizer
-from sklearn.metrics import f1_score, roc_curve, auc, recall_score, precision_score
+from sklearn.metrics import f1_score, roc_curve, auc, recall_score, precision_score, roc_auc_score
 
 
 from sklearn.model_selection import train_test_split
@@ -201,33 +201,41 @@ class PerformAnalysis:
     def get_metrics(self, classifier):
         classifier.fit(self.X_train, self.y_train)
         self.y_pred = classifier.predict(self.X_test)
-        y_pred_proba = classifier.predict_proba(self.X_test)
-        
+
+        # Calculate classification scores (F1, Recall, Precision)
         self.f1_score = f1_score(self.y_test, self.y_pred, average='weighted')
         self.recall = recall_score(self.y_test, self.y_pred, average='weighted')
         self.precision = precision_score(self.y_test, self.y_pred, average='weighted')
 
+        # Calculate ROC AUC
         label_binarizer = LabelBinarizer()
         y_true_binary = label_binarizer.fit_transform(self.y_test)
 
-        fpr = {}
-        tpr = {}
-        roc_auc = {}
-        n_classes = len(label_binarizer.classes_)
+        if hasattr(classifier, "predict_proba"):
+            y_pred_proba = classifier.predict_proba(self.X_test)
+            n_classes = y_pred_proba.shape[1]
 
-        if n_classes > 2:
-            for i in range(n_classes):
-                fpr[i], tpr[i], _ = roc_curve(y_true_binary[:, i], y_pred_proba[:, i])
-                roc_auc[i] = auc(fpr[i], tpr[i])
-            self.roc_auc = np.mean(list(roc_auc.values()))
-        elif n_classes == 2:
-            fpr, tpr, _ = roc_curve(y_true_binary[:, 0], y_pred_proba[:, 1])  # assuming binary classification
-            self.roc_auc = auc(fpr, tpr)
-        elif n_classes == 1:
-            fpr, tpr, _ = roc_curve(y_true_binary.ravel(), y_pred_proba.ravel())
-            self.roc_auc = auc(fpr, tpr)
+            if n_classes > 2:
+                roc_auc = {}
+                for i in range(n_classes):
+                    roc_auc[i] = roc_auc_score(y_true_binary[:, i], y_pred_proba[:, i])
+                self.roc_auc = np.mean(list(roc_auc.values()))
+            elif n_classes == 2:
+                self.roc_auc = roc_auc_score(y_true_binary, y_pred_proba[:, 1])
+            elif n_classes == 1:
+                self.roc_auc = roc_auc_score(y_true_binary, y_pred_proba)
+            else:
+                raise ValueError("Number of classes should be at least 1 for ROC AUC calculation.")
         else:
-            raise ValueError("Number of classes should be at least 1 for ROC AUC calculation.")
+            # For classifiers without predict_proba, use decision_function or other methods
+            if hasattr(classifier, "decision_function"):
+                decision_function = classifier.decision_function(self.X_test)
+            else:
+                decision_function = classifier.predict(self.X_test)  # fallback to predict if decision_function is not available
+
+            # Assuming decision_function now contains scores that can be used for ROC AUC
+            fpr, tpr, _ = roc_curve(y_true_binary.ravel(), decision_function.ravel())
+            self.roc_auc = auc(fpr, tpr)
 
 
 
