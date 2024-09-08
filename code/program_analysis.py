@@ -2,7 +2,6 @@ import warnings
 import time
 import sys
 import psutil
-import time
 import os
 import threading
 import pandas as pd
@@ -85,6 +84,7 @@ class PrepareData:
         This class receaves the dataframe and returns the X_train, X_test, y_train and y_test
     '''
     def __init__(self, dataframe):
+
         if 'id' in dataframe.columns:
             dataframe.drop('id', axis=1, inplace=True)
         dataframe = dataframe.sample(frac=1).reset_index(drop=True)
@@ -93,12 +93,12 @@ class PrepareData:
             dataframe[column] = dataframe[column].apply(lambda x: pd.to_numeric(x, errors='coerce')\
                                                         if isinstance(x, str) and any(char.isdigit() for char in x) else x)
 
+        #dataframe = dataframe.apply(pd.to_numeric, errors='coerce')
         dataframe = dataframe.dropna()
 
         self.x = dataframe.iloc[:, :-1]
         self.y = dataframe.iloc[:, -1]
-
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.x, self.y, test_size=0.20)
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.x, self.y, test_size=0.20, train_size=0.80)
 
 class PerformAnalysis:
     '''
@@ -141,7 +141,7 @@ class PerformAnalysis:
         self.X_test = ipca.transform(self.X_test)
 
     def apply_ica(self):
-        n_components = int(self.X_train.shape[1]/2)
+        n_components = int(self.X_train.shape[1]//2)
         ica = FastICA(n_components=n_components)
         self.X_train = ica.fit_transform(self.X_train)
         self.X_test = ica.transform(self.X_test)
@@ -280,7 +280,7 @@ monitor_thread.start()
 
 start_time = time.time()
 
-a = Analysis(given_dataset, given_technique, given_optimization, given_cross_validation, given_model)
+analysis = Analysis(given_dataset, given_technique, given_optimization, given_cross_validation, given_model)
 
 end_time = time.time()
 
@@ -288,19 +288,18 @@ processing_time = end_time - start_time
 
 
 given_parameters = given_parameters.split(',')
-result = str(given_technique) + "," +  str(given_model)
-
+result = f"{given_technique},{given_model}"
 if 'F1-Score' in given_parameters:
-    result = result + "," + str(a.f1_score) 
+    result += f",{analysis.f1_score}"
 if 'Processing Time' in given_parameters:
-    result = result + "," + str(processing_time) 
+    result += f",{processing_time}"
 if 'ROC AUC' in given_parameters:
-    result = result + "," + str(a.roc_auc)
+    result += f",{analysis.roc_auc}"
 if 'Memory Usage' in given_parameters:
-    result = result + "," + str(memory_monitor.max_memory_rss - memory_monitor.initial_memory_usage) 
+    result += f",{memory_monitor.max_memory_rss - memory_monitor.initial_memory_usage}"
 if 'Precision' in given_parameters:
-    result = result + "," + str(a.precision)
+    result += f",{analysis.precision}"
 if 'Recall' in given_parameters:
-    result = result + "," + str(a.recall)
+    result += f",{analysis.recall}"
 
 print(result)
