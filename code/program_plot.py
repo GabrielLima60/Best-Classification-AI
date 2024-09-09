@@ -8,39 +8,48 @@ from PIL import Image
 def plot():
     dataset = pd.read_csv('results table\\results.csv')
 
-    metrics = ["f1_score", "processing_time", "memory_usage"]
-    titles = ["F1 Score Comparison", "Processing Time Comparison (seconds)", "Memory Usage Comparison (MB)"]
-
-    fig, axes = plt.subplots(len(metrics), 1, figsize=(10, 5 * len(metrics)), dpi=120)
-
-    sns.set_palette("hls")
+    metrics = ['F1-Score', 'Processing Time', 'ROC AUC', 'Memory Usage', 'Precision', 'Recall']
+    num_metrics = len(metrics)
+    
+    # Create subplots with one row per metric
+    fig, axes = plt.subplots(num_metrics, 1, figsize=(10, 6 * num_metrics))  # Adjust height based on number of metrics
 
     for i, metric in enumerate(metrics):
-        ax = sns.barplot(data=dataset, x="model", y=metric, hue="technique", errorbar=None, ax=axes[i])
-        axes[i].set_xlabel("AI Model")
-        axes[i].set_ylabel(metric)
-        axes[i].set_title(titles[i])
+        filtered_data = remove_outliers(dataset, metric)
+        
+        # Create a dot plot for each metric in its corresponding subplot
+        sns.stripplot(ax=axes[i], x='model', y=metric, hue='technique', data=filtered_data, jitter=True, size=7, palette='Set2')
+        
+        # Add plot titles and labels
+        axes[i].set_title(f'Dot Plot for {metric} by Technique and Model (Without Outliers)')
+        axes[i].set_xlabel('Model')
+        
+        if metric == 'Memory Usage':
+            axes[i].set_ylabel(metric + ' (MB)')
+        elif metric == 'Processing Time':
+            axes[i].set_ylabel(metric + ' (seconds)')
+        else:
+            axes[i].set_ylabel(metric)
 
-        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), shadow=True, ncol=2)
-
-        for p in ax.patches:
-            height = p.get_height() if not pd.isnull(p.get_height()) else 0
-            if height != 0:  
-                ax.annotate(f'{height:.2f}', (p.get_x() + p.get_width() / 2., height),
-                            ha='center', va='center', fontsize=8, color='black', xytext=(0, 5),
-                            textcoords='offset points')
+        axes[i].legend(title='Technique')
 
     plt.tight_layout()
 
-    figure = plt.gcf()  
-    canvas = FigureCanvasAgg(figure)
+    canvas = FigureCanvasAgg(fig)
     canvas.draw()
     image_data = canvas.tostring_rgb()
     size = canvas.get_width_height()
 
-    # Save the Seaborn plot as an image
+    # Save the entire figure as an image
     image = Image.frombytes("RGB", size, image_data)
     image.save('results image\\graphs.png')
+
+def remove_outliers(df, metric):
+    mean = df[metric].mean()
+    std = df[metric].std()
+    # Keep only the values within 3 standard deviations
+    filtered_df = df[(df[metric] >= mean - 3 * std) & (df[metric] <= mean + 3 * std)]
+    return filtered_df
 
 if __name__ == "__main__":
     plot()
