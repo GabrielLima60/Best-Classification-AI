@@ -6,9 +6,11 @@ import pandas as pd
 from PIL import Image
 
 def plot():
-    dataset = pd.read_csv('results table\\results.csv')
+    dataset = pd.read_csv('results.csv')
 
-    metrics = ['F1-Score', 'Processing Time', 'ROC AUC', 'Memory Usage', 'Precision', 'Recall']
+    metrics = dataset.columns.tolist()
+    metrics.remove('technique')
+    metrics.remove('model')
     num_metrics = len(metrics)
     
     fig, axes = plt.subplots(num_metrics, 1, figsize=(10, 6 * num_metrics))  
@@ -16,7 +18,7 @@ def plot():
     for i, metric in enumerate(metrics):
         filtered_data = remove_outliers(dataset, metric)
         
-        sns.stripplot(ax=axes[i], x='model', y=metric, hue='technique', data=filtered_data, jitter=True, size=7, palette='Set2')
+        sns.boxplot(ax=axes[i], x='model', y=metric, hue='technique', data=filtered_data, palette='Set2', showfliers=False)
         
         axes[i].set_title(f'{metric} by Technique and Model (Without Outliers)')
         axes[i].grid(True, axis='y', linestyle='--', alpha=0.7)
@@ -49,4 +51,3 @@ def remove_outliers(df, metric):
 
 if __name__ == "__main__":
     plot()
-    sys.exit(0)
