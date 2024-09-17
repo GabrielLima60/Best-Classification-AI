@@ -6,7 +6,7 @@ import pandas as pd
 from PIL import Image
 
 def plot():
-    dataset = pd.read_csv('results.csv')
+    dataset = pd.read_csv('results table//results.csv')
 
     metrics = dataset.columns.tolist()
     metrics.remove('technique')
@@ -51,3 +51,4 @@ def remove_outliers(df, metric):
 
 if __name__ == "__main__":
     plot()
+    sys.exit()
