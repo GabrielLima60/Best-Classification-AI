@@ -26,6 +26,19 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.model_selection import RandomizedSearchCV, GridSearchCV, KFold
 from scipy.stats import randint, uniform
 
+# Padrão implementado:  Strategy
+# O padrão Strategy define uma família de algoritmos, encapsula cada um deles, e os torna intercambiáveis. 
+# O Strategy permite que o algoritmo varie independentemente dos clientes que o utilizam.
+# No código, o padrão é aplicado na seleção de técnicas de análise e algoritmos de classificação na classe PerformAnalysis. 
+# A escolha do modelo de classificação (SVM, MLP, DecisionTree, etc.) e da técnica (PCA, ICA, LDA, etc.) depende dos parâmetros passados, e é possivel trocar essas estratégias sem modificar a estrutura geral da classe. 
+
+
+# Padrão implementado: Template Method
+# O Template Method define o esqueleto de um algoritmo em uma operação, deixando alguns passos para que subclasses implementem. 
+# Ele permite que subclasses redefinam certos passos de um algoritmo sem alterar sua estrutura.
+# No código, isso ocorre nas classes Analysis e PerformAnalysis. 
+# A classe Analysis define a estrutura geral do processo de análise (carregar dados, aplicar a técnica, selecionar o modelo, realizar a otimização), mas delega a implementação de passos específicos, como as diferentes técnicas (PCA, ICA, LDA) e a seleção de modelos (select_model), para métodos em PerformAnalysis.
+
 
 warnings.filterwarnings("ignore")
 
