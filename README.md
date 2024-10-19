@@ -17,5 +17,5 @@ pip install matplotlib seaborn pandas numpy scikit-learn pillow psutil
 # ATENTION
 - Your CSV must allow for supervisioned classification AIs.
 - The target variable (y) column must be the last column of the CSV.
-- This software does not perform proper data cleaning.
+- This software peforms some data cleaning, but proper cleaning done by the user is reccomended
 
