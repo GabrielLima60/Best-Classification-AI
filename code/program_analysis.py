@@ -243,7 +243,11 @@ class PerformAnalysis:
             if n_classes > 2:
                 roc_auc = {}
                 for i in range(n_classes):
-                    roc_auc[i] = roc_auc_score(y_true_binary[:, i], y_pred_proba[:, i])
+                    for i in range(min(y_true_binary.shape[1], y_pred_proba.shape[1])):
+                        try:
+                            roc_auc[i] = roc_auc_score(y_true_binary[:, i], y_pred_proba[:, i])
+                        except IndexError:
+                            continue  # Skips if the class is missing in the current fold
                 self.roc_auc = np.mean(list(roc_auc.values()))
             elif n_classes == 2:
                 self.roc_auc = roc_auc_score(y_true_binary, y_pred_proba[:, 1])
