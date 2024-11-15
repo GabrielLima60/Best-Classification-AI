@@ -12,56 +12,59 @@ def plot_all():
     metrics.remove('model')
     num_metrics = len(metrics)
 
-    # Calculate the number of rows based on metrics count, and set up the figure
-    total_rows = num_metrics * 3  # 1 row each for box plot, model histogram, and technique histogram
+    total_rows = num_metrics * 3  
     fig, axes = plt.subplots(total_rows, 1, figsize=(12, 5 * total_rows))
+    axes = axes.flatten()
     
     row = 0
 
-    # Section 1: Box Plots by Technique and Model
+    # Box Plots by Technique and Model
+    fig.text(0.5, 0.85 - (row * 0.05), "Box Plots by Technique and Model", ha='center', fontsize=16, fontweight='bold')
     for i, metric in enumerate(metrics):
-        filtered_data = remove_outliers(dataset, metric)
+        filtered_data = dataset
         
         sns.boxplot(ax=axes[row], x='model', y=metric, hue='technique', data=filtered_data, palette='Set2', showfliers=False)
-        axes[row].set_title(f'{metric} by Technique and Model (Without Outliers)')
+        axes[row].set_title(f'{metric} by Technique and Model')
         axes[row].grid(True, axis='y', linestyle='--', alpha=0.7)
         axes[row].set_xlabel('Model')
         axes[row].set_ylabel(metric + ' (MB)' if metric == 'Memory Usage' else metric + ' (seconds)' if metric == 'Processing Time' else metric)
         axes[row].legend(title='Technique')
         row += 1
 
-    # Section 2: Histograms by Model
+    # Histograms by Model
+    fig.text(0.5, 0.85 - (row * 0.05), "Histograms by Model", ha='center', fontsize=16, fontweight='bold')
     for metric in metrics:
-        filtered_data = remove_outliers(dataset, metric)
-        sns.histplot(data=filtered_data, x=metric, hue='model', multiple='stack', palette='Set1', kde=True, ax=axes[row])
-        axes[row].set_title(f'Histogram of {metric} by Model (Without Outliers)')
+        filtered_data = dataset
+
+        sns.histplot(data=filtered_data, x=metric, hue='model', multiple='layer', palette='Set1', kde=True, ax=axes[row])
+        axes[row].set_title(f'Histogram of {metric} by Model')
         axes[row].set_xlabel(metric)
         axes[row].set_ylabel('Frequency')
         axes[row].grid(True, linestyle='--', alpha=0.7)
         row += 1
 
-    # Section 3: Histograms by Technique
+    # Histograms by Technique
+    fig.text(0.5, 0.85 - (row * 0.05), "Histograms by Technique", ha='center', fontsize=16, fontweight='bold')
     for metric in metrics:
-        filtered_data = remove_outliers(dataset, metric)
-        sns.histplot(data=filtered_data, x=metric, hue='technique', multiple='stack', palette='Set3', kde=True, ax=axes[row])
-        axes[row].set_title(f'Histogram of {metric} by Technique (Without Outliers)')
+        filtered_data = dataset
+
+        sns.histplot(data=filtered_data, x=metric, hue='technique', multiple='layer', palette='Set3', kde=True, ax=axes[row])
+        axes[row].set_title(f'Histogram of {metric} by Technique')
         axes[row].set_xlabel(metric)
         axes[row].set_ylabel('Frequency')
         axes[row].grid(True, linestyle='--', alpha=0.7)
         row += 1
 
-    # Adjust layout and add a section title for each plot type
     plt.tight_layout()
-    fig.suptitle('Combined Analysis: Box Plots and Histograms', fontsize=18, fontweight='bold')
+    fig.suptitle('Results', fontsize=18, fontweight='bold')
     fig.subplots_adjust(top=0.95)
 
-    # Save the figure as one image
     canvas = FigureCanvasAgg(fig)
     canvas.draw()
     image_data = canvas.tostring_rgb()
     size = canvas.get_width_height()
     image = Image.frombytes("RGB", size, image_data)
-    image.save('results image\\combined_graphs.png')
+    image.save('results image\\graphs.png')
 
 def remove_outliers(df, metric):
     mean = df[metric].mean()

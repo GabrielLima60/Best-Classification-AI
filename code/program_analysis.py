@@ -23,7 +23,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.decomposition import PCA, IncrementalPCA, FastICA
 
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-from sklearn.model_selection import RandomizedSearchCV, GridSearchCV, KFold
+from sklearn.model_selection import RandomizedSearchCV, GridSearchCV, StratifiedKFold
 from scipy.stats import randint, uniform
 
 warnings.filterwarnings("ignore")
@@ -53,9 +53,9 @@ class Analysis:
             recall_list = []
             roc_auc_list = []
 
-            kf = KFold(n_splits=5)
+            kf = StratifiedKFold(n_splits=5, shuffle=True)
 
-            for train_index, test_index in kf.split(prepared.x):
+            for train_index, test_index in kf.split(prepared.x, prepared.y):
                 X_train, X_test = prepared.x.iloc[train_index], prepared.x.iloc[test_index]
                 y_train, y_test = prepared.y.iloc[train_index], prepared.y.iloc[test_index]
 
@@ -99,7 +99,7 @@ class PrepareData:
         self.x = dataframe.iloc[:, :-1]
         self.x = self.identify_classification_columns_and_get_dummies(self.x)
         self.y = dataframe.iloc[:, -1]
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.x, self.y, test_size=0.20, train_size=0.80)
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.x, self.y, stratify=self.y,test_size=0.20, train_size=0.80)
 
     def remove_outliers(self, dataframe, threshold=3):
 
@@ -135,7 +135,7 @@ class PerformAnalysis:
         self.X_test = X_test
         self.y_train = y_train
         self.y_test = y_test
-        self.y_pred = y_test
+        self.y_pred = None
 
         if technique == 'PCA':
             self.apply_pca()
@@ -243,9 +243,9 @@ class PerformAnalysis:
             if n_classes > 2:
                 roc_auc = {}
                 for i in range(n_classes):
-                    for i in range(min(y_true_binary.shape[1], y_pred_proba.shape[1])):
+                    for j in range(min(y_true_binary.shape[1], y_pred_proba.shape[1])):
                         try:
-                            roc_auc[i] = roc_auc_score(y_true_binary[:, i], y_pred_proba[:, i])
+                            roc_auc[j] = roc_auc_score(y_true_binary[:, j], y_pred_proba[:, j])
                         except IndexError:
                             continue  # Skips if the class is missing in the current fold
                 self.roc_auc = np.mean(list(roc_auc.values()))
