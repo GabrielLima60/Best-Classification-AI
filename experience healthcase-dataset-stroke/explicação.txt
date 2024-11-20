@@ -1,3 +1,0 @@
-Testei o healthcase-dataset-stroke com todas os modelos e técnicas, 10 vezes em cada. 
-
-Resultado horrível, em algumas situações dava pra ver variação clara, mas na maioria parecia completamente aleatório

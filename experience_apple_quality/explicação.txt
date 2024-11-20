@@ -1,3 +1,0 @@
-Testei selecionando todos os modelos exceto o MLP pois toma muito tempo, selecionei todas as técnicas de otimização.
-
-Esse teste foi muito bom
