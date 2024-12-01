@@ -26,13 +26,13 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
     private JLabel bottomLoadingLabel;
     private StringBuilder pythonOutput = new StringBuilder();
 
-    private List<String> techniques = Arrays.asList("PCA", "IncPCA", "ICA", "LDA");
+    private List<String> techniques = Arrays.asList("PCA", "IncPCA", "ICA", "LDA", "SMOTE");
     private List<String> models = Arrays.asList("SVM", "MLP", "Tree", "KNN", "LogReg");
     private String selectedOptimization;
     private String selectedCrossValidation;
     private JFormattedTextField iterationsField;
     private int numberOfIterations;
-    private List<String> parameters = Arrays.asList("F1-Score", "Processing Time", "ROC AUC", "Memory Usage", "Precision", "Recall");
+    private List<String> parameters = Arrays.asList("F1-Score", "Processing Time", "ROC AUC", "Memory Usage", "Precision", "Accuracy","Recall");
 
     public Best_Classification_AI() {
         super("Best Classification AI");
@@ -149,14 +149,19 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
         gridSearchRadioButton.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 22));
         JRadioButton randomSearchRadioButton = new JRadioButton("Random Search");
         randomSearchRadioButton.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 22));
+        JRadioButton NoSearchRadioButton = new JRadioButton("None");
+        NoSearchRadioButton.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 22));
         ButtonGroup optimizationGroup = new ButtonGroup();
         optimizationGroup.add(gridSearchRadioButton);
         optimizationGroup.add(randomSearchRadioButton);
+        optimizationGroup.add(NoSearchRadioButton);
         optimizationPanel.add(gridSearchRadioButton);
         optimizationPanel.add(randomSearchRadioButton);
+        optimizationPanel.add(NoSearchRadioButton);
 
         gridSearchRadioButton.addActionListener(e -> selectedOptimization = "Grid Search");
         randomSearchRadioButton.addActionListener(e -> selectedOptimization = "Random Search");
+        NoSearchRadioButton.addActionListener(e -> selectedOptimization = "None");
 
         gridSearchRadioButton.setSelected(true);
         selectedOptimization = "Grid Search";

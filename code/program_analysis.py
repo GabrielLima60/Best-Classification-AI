@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 
 from sklearn.preprocessing import StandardScaler, LabelBinarizer
-from sklearn.metrics import f1_score, roc_curve, auc, recall_score, precision_score, roc_auc_score
+from sklearn.metrics import f1_score, roc_curve, auc, recall_score, precision_score, accuracy_score,roc_auc_score
 
 
 from sklearn.model_selection import train_test_split
@@ -20,6 +20,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.naive_bayes import GaussianNB
 
+from imblearn.over_sampling import SMOTE
 from sklearn.decomposition import PCA, IncrementalPCA, FastICA
 
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
@@ -43,6 +44,7 @@ class Analysis:
                                                                         prepared.y_test)
             self.f1_score = performed.f1_score
             self.precision = performed.precision
+            self.accuracy = performed.accuracy
             self.recall = performed.recall
             self.roc_auc = performed.roc_auc
 
@@ -50,6 +52,7 @@ class Analysis:
             
             f1_score_list = []
             precision_list = []
+            accuracy_list = []
             recall_list = []
             roc_auc_list = []
 
@@ -65,11 +68,13 @@ class Analysis:
                                                                             y_test)
                 f1_score_list.append(performed.f1_score)
                 precision_list.append(performed.precision)
+                accuracy_list.append(performed.accuracy)
                 recall_list.append(performed.recall)
                 roc_auc_list.append(performed.roc_auc)
 
             self.f1_score = sum(f1_score_list) / len(f1_score_list)
             self.precision = sum(precision_list) / len(precision_list)
+            self.accuracy = sum(accuracy_list) / len(accuracy_list)
             self.recall = sum(recall_list) / len(recall_list)
             self.roc_auc = sum(roc_auc_list) / len(roc_auc_list)
                 
@@ -137,6 +142,11 @@ class PerformAnalysis:
         self.y_test = y_test
         self.y_pred = None
 
+        if technique == 'SMOTE':
+            self.apply_smote()
+
+        self.apply_normalization()
+
         if technique == 'PCA':
             self.apply_pca()
         elif technique == 'IncPCA':
@@ -147,8 +157,6 @@ class PerformAnalysis:
             self.apply_lda()
         else: # Apply no technique
             pass
-
-        self.apply_normalization()
 
         self.select_model(model, optimization)
 
@@ -177,6 +185,9 @@ class PerformAnalysis:
 
         self.X_test = lda.transform(self.X_test)
 
+    def apply_smote(self):
+        smote = SMOTE()
+        self.X_train, self.y_train = smote.fit_resample(self.X_train, self.y_train)
 
     def apply_normalization(self):
         scaler = StandardScaler()
@@ -217,9 +228,10 @@ class PerformAnalysis:
             optimized_model = GridSearchCV(estimator=model_dict[model], param_grid = param_grid_dict[model], cv=5)
         elif optimization == 'Random Search':
             optimized_model = RandomizedSearchCV(estimator = model_dict[model], param_distributions = param_random_dict[model], n_iter=50, cv=5)
+        elif optimization == 'None':
+            optimized_model = model_dict[model]
         else:
             raise ValueError('Wrong optimization name given')
-
 
         self.get_metrics(optimized_model)
 
@@ -227,10 +239,11 @@ class PerformAnalysis:
         classifier.fit(self.X_train, self.y_train)
         self.y_pred = classifier.predict(self.X_test)
 
-        # Calculate classification scores (F1, Recall, Precision)
+        # Calculate classification scores (F1, Recall, Precision and Accuracy)
         self.f1_score = f1_score(self.y_test, self.y_pred, average='weighted')
         self.recall = recall_score(self.y_test, self.y_pred, average='weighted')
         self.precision = precision_score(self.y_test, self.y_pred, average='weighted')
+        self.accuracy = accuracy_score(self.y_test, self.y_pred)
 
         # Calculate ROC AUC
         label_binarizer = LabelBinarizer()
@@ -328,6 +341,8 @@ if 'Memory Usage' in given_parameters:
     result += f",{memory_monitor.max_memory_rss - memory_monitor.initial_memory_usage}"
 if 'Precision' in given_parameters:
     result += f",{analysis.precision}"
+if 'Accuracy' in given_parameters:
+    result += f",{analysis.accuracy}"
 if 'Recall' in given_parameters:
     result += f",{analysis.recall}"
 
