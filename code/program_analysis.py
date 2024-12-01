@@ -7,9 +7,10 @@ import threading
 import pandas as pd
 import numpy as np
 
-from sklearn.preprocessing import StandardScaler, LabelBinarizer
-from sklearn.metrics import f1_score, roc_curve, auc, recall_score, precision_score, accuracy_score,roc_auc_score
+import xgboost as xgb
 
+from sklearn.preprocessing import StandardScaler, LabelBinarizer, LabelEncoder
+from sklearn.metrics import f1_score, roc_curve, auc, recall_score, precision_score, accuracy_score,roc_auc_score
 
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
@@ -17,7 +18,7 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.naive_bayes import GaussianNB
 
 from imblearn.over_sampling import SMOTE
@@ -103,7 +104,11 @@ class PrepareData:
 
         self.x = dataframe.iloc[:, :-1]
         self.x = self.identify_classification_columns_and_get_dummies(self.x)
+
         self.y = dataframe.iloc[:, -1]
+        label_encoder = LabelEncoder()
+        self.y = label_encoder.fit_transform(self.y)
+
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.x, self.y, stratify=self.y,test_size=0.20, train_size=0.80)
 
     def remove_outliers(self, dataframe, threshold=3):
@@ -198,36 +203,44 @@ class PerformAnalysis:
         model_dict = {'Naive Bayes': GaussianNB(),
                       'SVM': SVC(),
                       'MLP': MLPClassifier(),
-                      'Tree': DecisionTreeClassifier(),
+                      'DecisionTree': DecisionTreeClassifier(),
+                      'RandomForest': RandomForestClassifier(),
                       'KNN': KNeighborsClassifier(),
                       'LogReg': LogisticRegression(),
-                      'GBC': GradientBoostingClassifier()
+                      'GradientBoost': GradientBoostingClassifier(),
+                      'XGBoost': xgb.XGBClassifier()
                      }
         
         param_grid_dict = {
             'Naive Bayes': {},
             'SVM': {'C': [0.1, 1, 10], 'kernel': ['linear', 'rbf']},
             'MLP': {'hidden_layer_sizes': [(50,), (100,)], 'alpha': [0.0001, 0.001]},
-            'Tree': {'max_depth': [None, 10, 20, 30]},
+            'DecisionTree': {'max_depth': [None, 10, 20, 30]},
             'KNN': {'n_neighbors': [3, 5, 7]},
             'LogReg': {'C': [0.1, 1, 10]},
-            'GBC': {'n_estimators': [50, 100, 200], 'learning_rate': [0.01, 0.1, 1]}
+            'GradientBoost': {'n_estimators': [50, 100, 200], 'learning_rate': [0.01, 0.1, 1]},
+            'RandomForest': {'n_estimators': [50, 100, 200], 'max_depth': [None, 10, 30]},
+            'XGBoost': {'n_estimators': [50, 100, 200], 'learning_rate': [0.01, 0.1, 0.3]}
         }
 
         param_random_dict = {
             'Naive Bayes': {},
             'SVM': {'C': uniform(0.1, 10), 'kernel': ['linear', 'rbf']},
             'MLP': {'hidden_layer_sizes': [(50,), (100,)], 'alpha': uniform(0.0001, 0.001)},
-            'Tree': {'max_depth': randint(10, 30)},
+            'DecisionTree': {'max_depth': randint(10, 30)},
             'KNN': {'n_neighbors': randint(3, 10)},
             'LogReg': {'C': uniform(0.1, 10)},
-            'GBC': {'n_estimators': randint(50, 200), 'learning_rate': uniform(0.01, 1)}
+            'GradientBoost': {'n_estimators': randint(50, 200), 'learning_rate': uniform(0.01, 1)},
+            'RandomForest': {'n_estimators': randint(50, 200), 'max_depth': randint(10, 30)},
+            'XGBoost': {'n_estimators': randint(50, 200), 'learning_rate': uniform(0.01, 0.3)}
         }
         
         if optimization == 'Grid Search':
             optimized_model = GridSearchCV(estimator=model_dict[model], param_grid = param_grid_dict[model], cv=5)
         elif optimization == 'Random Search':
             optimized_model = RandomizedSearchCV(estimator = model_dict[model], param_distributions = param_random_dict[model], n_iter=50, cv=5)
+        # elif optimization == 'Genetic Algorithm':
+
         elif optimization == 'None':
             optimized_model = model_dict[model]
         else:

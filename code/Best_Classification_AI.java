@@ -27,7 +27,7 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
     private StringBuilder pythonOutput = new StringBuilder();
 
     private List<String> techniques = Arrays.asList("PCA", "IncPCA", "ICA", "LDA", "SMOTE");
-    private List<String> models = Arrays.asList("SVM", "MLP", "Tree", "KNN", "LogReg");
+    private List<String> models = Arrays.asList("SVM", "MLP", "DecisionTree", "RandomForest", "KNN", "LogReg", "GradientBoost", "XGBoost");
     private String selectedOptimization;
     private String selectedCrossValidation;
     private JFormattedTextField iterationsField;
@@ -149,18 +149,26 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
         gridSearchRadioButton.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 22));
         JRadioButton randomSearchRadioButton = new JRadioButton("Random Search");
         randomSearchRadioButton.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 22));
+        //JRadioButton geneticAlgorithmRadioButton = new JRadioButton("Genetic Algorithm");
+        //geneticAlgorithmRadioButton.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 22));
         JRadioButton NoSearchRadioButton = new JRadioButton("None");
         NoSearchRadioButton.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 22));
+
         ButtonGroup optimizationGroup = new ButtonGroup();
         optimizationGroup.add(gridSearchRadioButton);
         optimizationGroup.add(randomSearchRadioButton);
+        //optimizationGroup.add(geneticAlgorithmRadioButton);
         optimizationGroup.add(NoSearchRadioButton);
+
+
         optimizationPanel.add(gridSearchRadioButton);
         optimizationPanel.add(randomSearchRadioButton);
+        //optimizationPanel.add(geneticAlgorithmRadioButton);
         optimizationPanel.add(NoSearchRadioButton);
 
         gridSearchRadioButton.addActionListener(e -> selectedOptimization = "Grid Search");
         randomSearchRadioButton.addActionListener(e -> selectedOptimization = "Random Search");
+        //geneticAlgorithmRadioButton.addActionListener(e -> selectedOptimization = "Genetic Algorithm");
         NoSearchRadioButton.addActionListener(e -> selectedOptimization = "None");
 
         gridSearchRadioButton.setSelected(true);
