@@ -57,7 +57,7 @@ class Analysis:
             recall_list = []
             roc_auc_list = []
 
-            kf = StratifiedKFold(n_splits=5, shuffle=True, n_jobs=-1)
+            kf = StratifiedKFold(n_splits=5, shuffle=True)
 
             for train_index, test_index in kf.split(prepared.x, prepared.y):
                 X_train, X_test = prepared.x.iloc[train_index], prepared.x.iloc[test_index]
@@ -107,7 +107,7 @@ class PrepareData:
 
         self.y = dataframe.iloc[:, -1]
         label_encoder = LabelEncoder()
-        self.y = label_encoder.fit_transform(self.y)
+        self.y = pd.Series(label_encoder.fit_transform(self.y))
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.x, self.y, stratify=self.y,test_size=0.20, train_size=0.80)
 
