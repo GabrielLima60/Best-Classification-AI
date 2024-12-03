@@ -57,7 +57,7 @@ class Analysis:
             recall_list = []
             roc_auc_list = []
 
-            kf = StratifiedKFold(n_splits=5, shuffle=True)
+            kf = StratifiedKFold(n_splits=5, shuffle=True, n_jobs=-1)
 
             for train_index, test_index in kf.split(prepared.x, prepared.y):
                 X_train, X_test = prepared.x.iloc[train_index], prepared.x.iloc[test_index]
@@ -204,7 +204,7 @@ class PerformAnalysis:
                       'SVM': SVC(),
                       'MLP': MLPClassifier(),
                       'DecisionTree': DecisionTreeClassifier(),
-                      'RandomForest': RandomForestClassifier(),
+                      'RandomForest': RandomForestClassifier(n_jobs=-1),
                       'KNN': KNeighborsClassifier(),
                       'LogReg': LogisticRegression(),
                       'GradientBoost': GradientBoostingClassifier(),
@@ -218,7 +218,7 @@ class PerformAnalysis:
             'DecisionTree': {'max_depth': [None, 10, 20, 30]},
             'KNN': {'n_neighbors': [3, 5, 7]},
             'LogReg': {'C': [0.1, 1, 10]},
-            'GradientBoost': {'n_estimators': [50, 100, 200], 'learning_rate': [0.01, 0.1, 1]},
+            'GradientBoost': {'n_estimators': [50, 200], 'learning_rate': [0.01, 1]},
             'RandomForest': {'n_estimators': [50, 100, 200], 'max_depth': [None, 10, 30]},
             'XGBoost': {'n_estimators': [50, 100, 200], 'learning_rate': [0.01, 0.1, 0.3]}
         }
@@ -238,7 +238,7 @@ class PerformAnalysis:
         if optimization == 'Grid Search':
             optimized_model = GridSearchCV(estimator=model_dict[model], param_grid = param_grid_dict[model], cv=5)
         elif optimization == 'Random Search':
-            optimized_model = RandomizedSearchCV(estimator = model_dict[model], param_distributions = param_random_dict[model], n_iter=50, cv=5)
+            optimized_model = RandomizedSearchCV(estimator = model_dict[model], param_distributions = param_random_dict[model], n_iter=5, cv=5)
         # elif optimization == 'Genetic Algorithm':
 
         elif optimization == 'None':
@@ -295,7 +295,7 @@ class PerformAnalysis:
 
 
 class MemoryMonitor:
-    def __init__(self, pid, interval=0.001):
+    def __init__(self, pid, interval=0.01):
         self.process = psutil.Process(pid)
         self.interval = interval
         self.initial_memory_usage = None
