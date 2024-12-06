@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.nio.file.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -364,12 +365,20 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
         
         try {
             pythonOutput.append("technique,model," + parameters).append("\n");
+            ProcessBuilder pb_cleaning = new ProcessBuilder("python", "code\\program_data_cleaning.py", selectedFile.getAbsolutePath());
+            pb_cleaning.redirectErrorStream(true);
+            Process process_cleaning = pb_cleaning.start();
+            int exitCode_cleaning = process_cleaning.waitFor();
+            if (exitCode_cleaning != 0) {
+                JOptionPane.showMessageDialog(this, "Error on the data cleaning script", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+
             for (String technique : selectedTechniques) {
                 for (String model : selectedModels) {
                     for (int i = 0; i < numberOfIterations; i++) {
 
                         // Execute the Python script passing the CSV file path
-                        ProcessBuilder pb = new ProcessBuilder("python", "code\\program_analysis.py", selectedFile.getAbsolutePath(), technique, model, selectedOptimization, selectedCrossValidation, parameters);
+                        ProcessBuilder pb = new ProcessBuilder("python", "code\\program_analysis.py", technique, model, selectedOptimization, selectedCrossValidation, parameters);
                         pb.redirectErrorStream(true);
                         Process process = pb.start();
 
@@ -389,6 +398,10 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
                     }
                 }
             }
+
+            // Delete the cleaned data file
+            Path filePath = Paths.get("resources\\cleaned_data.csv");
+            Files.delete(filePath);
             
             String returnedString = pythonOutput.toString();
 

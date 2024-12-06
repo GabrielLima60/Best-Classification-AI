@@ -90,50 +90,10 @@ class PrepareData:
         This class receaves the dataframe and returns the X_train, X_test, y_train and y_test
     '''
     def __init__(self, dataframe):
-
-        if 'id' in dataframe.columns:
-            dataframe.drop('id', axis=1, inplace=True)
-        dataframe = dataframe.sample(frac=1).reset_index(drop=True)
-
-        for column in dataframe.columns:
-            dataframe[column] = dataframe[column].apply(lambda x: pd.to_numeric(x, errors='coerce')\
-                                                        if isinstance(x, str) and any(char.isdigit() for char in x) else x)
-
-        dataframe = dataframe.dropna()
-
-        dataframe = self.remove_outliers(dataframe)        
-
         self.x = dataframe.iloc[:, :-1]
-        self.x = self.identify_classification_columns_and_get_dummies(self.x)
-
         self.y = dataframe.iloc[:, -1]
-        label_encoder = LabelEncoder()
-        self.y = pd.Series(label_encoder.fit_transform(self.y))
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.x, self.y, stratify=self.y,test_size=0.20, train_size=0.80)
-
-    def remove_outliers(self, dataframe, threshold=3):
-
-        numerical_df = dataframe.select_dtypes(include=['number'])
-
-        if numerical_df.empty:
-            return dataframe
-    
-        mean = numerical_df.mean()
-        std_dev = numerical_df.std()
-
-        outliers = (numerical_df  - mean).abs() > (threshold * std_dev)
-
-        # Remove outliers
-        df_cleaned = dataframe[~outliers.any(axis=1)]
-        
-        return df_cleaned
-
-    def identify_classification_columns_and_get_dummies (self, dataframe):
-        potential_categorical_columns = [col for col in dataframe.columns if dataframe[col].nunique() < 10 and dataframe[col].dtype in [int, object, str]]
-        dataframe = pd.get_dummies(dataframe, columns=potential_categorical_columns)
-
-        return dataframe
     
 
 class PerformAnalysis:
@@ -423,13 +383,12 @@ class MemoryMonitor:
 
 # MAIN
 
-given_dataset = sys.argv[1]
-given_dataset = pd.read_csv(given_dataset)
-given_technique = sys.argv[2]
-given_model = sys.argv[3]
-given_optimization = sys.argv[4]
-given_cross_validation = sys.argv[5]
-given_parameters = sys.argv[6]
+given_dataset = pd.read_csv('resources\\cleaned_data.csv')
+given_technique = sys.argv[1]
+given_model = sys.argv[2]
+given_optimization = sys.argv[3]
+given_cross_validation = sys.argv[4]
+given_parameters = sys.argv[5]
 
 # Getting the memory usage
 current_pid = os.getpid()
