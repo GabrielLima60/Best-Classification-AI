@@ -38,7 +38,11 @@ def plot_all():
     for metric in metrics:
         filtered_data = dataset
 
-        sns.kdeplot(data=filtered_data, x=metric, hue='model', multiple='layer', palette='Set1', ax=axes[row], fill=False, bw_adjust=1, clip=(0, None))
+        if metric in ['F1-Score', 'ROC AUC', 'Precision', 'Accuracy', 'Recall']:
+            sns.histplot(data=filtered_data, x=metric, hue='model', multiple='dodge', palette='Set1', ax=axes[row], kde=True, alpha=0.5)
+        else:
+            sns.kdeplot(data=filtered_data, x=metric, hue='model', multiple='layer', palette='Set1', ax=axes[row], fill=False, bw_adjust=1, clip=(0, None))
+
         axes[row].set_title(f'Density Plot of {metric} by Model')
         axes[row].set_xlabel(metric)
         axes[row].set_ylabel('Frequency')
@@ -89,7 +93,11 @@ def plot_all():
     for metric in metrics:
         filtered_data = dataset
 
-        sns.kdeplot(data=filtered_data, x=metric, hue='technique', multiple='layer', palette='Set2', ax=axes[row], fill=False, bw_adjust=1, clip=(0, None))
+        if metric in ['F1-Score', 'ROC AUC', 'Precision', 'Accuracy', 'Recall']:
+            sns.kdeplot(data=filtered_data, x=metric, hue='technique', multiple='layer', palette='Set2', ax=axes[row], fill=False, bw_adjust=1, clip=(0, 1))
+        else:
+            sns.kdeplot(data=filtered_data, x=metric, hue='technique', multiple='layer', palette='Set2', ax=axes[row], fill=False, bw_adjust=1, clip=(0, None))
+
         axes[row].set_title(f'Density Plot of {metric} by Technique')
         axes[row].set_xlabel(metric)
         axes[row].set_ylabel('Frequency')

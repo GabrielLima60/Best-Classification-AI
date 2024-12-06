@@ -7,6 +7,7 @@ import threading
 import pandas as pd
 import numpy as np
 
+
 import xgboost as xgb
 
 from sklearn.preprocessing import StandardScaler, LabelBinarizer, LabelEncoder
@@ -147,8 +148,8 @@ class PerformAnalysis:
         self.y_test = y_test
         self.y_pred = None
 
-        if technique == 'SMOTE':
-            self.apply_smote()
+        #if technique == 'SMOTE':
+        #    self.apply_smote()
 
         self.apply_normalization()
 
@@ -160,7 +161,9 @@ class PerformAnalysis:
             self.apply_ica()
         elif technique == 'LDA':
             self.apply_lda()
-        else: # Apply no technique
+        elif technique == 'No Technique':
+            pass
+        else: 
             pass
 
         self.select_model(model, optimization)
@@ -212,31 +215,134 @@ class PerformAnalysis:
                      }
         
         param_grid_dict = {
-            'Naive Bayes': {},
-            'SVM': {'C': [0.1, 1, 10], 'kernel': ['linear', 'rbf']},
-            'MLP': {'hidden_layer_sizes': [(50,), (100,)], 'alpha': [0.0001, 0.001]},
-            'DecisionTree': {'max_depth': [None, 10, 20, 30]},
-            'KNN': {'n_neighbors': [3, 5, 7]},
-            'LogReg': {'C': [0.1, 1, 10]},
-            'GradientBoost': {'n_estimators': [50, 200], 'learning_rate': [0.01, 1]},
-            'RandomForest': {'n_estimators': [50, 100, 200], 'max_depth': [None, 10, 30]},
-            'XGBoost': {'n_estimators': [50, 100, 200], 'learning_rate': [0.01, 0.1, 0.3]}
+            "Naive Bayes": {
+                "var_smoothing": [1e-9, 1e-8, 1e-7, 1e-6, 1e-5]
+            },
+            "SVM": {
+                "C": [0.1, 1, 10, 100],
+                "kernel": ["linear", "poly", "rbf", "sigmoid"],
+                "gamma": ["scale", "auto"]
+            },
+            "MLP": {
+                "hidden_layer_sizes": [(50,), (100,), (150,), (50, 50), (100, 100)],
+                "activation": ["relu", "tanh", "logistic"],
+                "solver": ["adam", "sgd"],
+                "alpha": [0.0001, 0.001, 0.01, 0.1],
+                "learning_rate": ["constant", "invscaling", "adaptive"]
+            },
+            "DecisionTree": {
+                "criterion": ["gini", "entropy"],
+                "max_depth": [None, 10, 20, 30, 50],
+                "min_samples_split": [2, 5, 10],
+                "min_samples_leaf": [1, 2, 4],
+                "max_features": [None, "auto", "sqrt", "log2"]
+            },
+            "RandomForest": {
+                "n_estimators": [50, 100, 200, 500],
+                "max_depth": [None, 10, 20, 30],
+                "min_samples_split": [2, 5, 10],
+                "min_samples_leaf": [1, 2, 4],
+                "max_features": ["auto", "sqrt", "log2"],
+                "bootstrap": [True, False]
+            },
+            "KNN": {
+                "n_neighbors": [3, 5, 7, 10],
+                "weights": ["uniform", "distance"],
+                "algorithm": ["auto", "ball_tree", "kd_tree", "brute"],
+                "leaf_size": [20, 30, 40, 50],
+                "p": [1, 2]
+            },
+            "LogReg": {
+                "penalty": ["l2", "l1"],
+                "C": [0.1, 1, 10, 100],
+                "solver": ["liblinear", "saga", "newton-cg"],
+                "max_iter": [50, 100, 200]
+            },
+            "GradientBoost": {
+                "n_estimators": [50, 100, 200],
+                "learning_rate": [0.05, 0.1, 0.2],
+                "max_depth": [3, 5, 7],
+                "subsample": [0.8, 0.9, 1.0],
+                "min_samples_split": [2, 5, 10],
+                "min_samples_leaf": [1, 2, 4]
+            },
+            "XGBoost": {
+                "n_estimators": [50, 100, 200],
+                "learning_rate": [0.01, 0.1, 0.3],
+                "max_depth": [3, 5, 7],
+                "subsample": [0.8, 0.9, 1.0],
+                "colsample_bytree": [0.8, 1.0],
+                "gamma": [0, 0.1, 0.2]
+            }
+            }
+        
+        param_random_dict = {
+            "Naive Bayes": {
+                "var_smoothing": uniform(1e-9, 1e-5)
+            },
+            "SVM": {
+                "C": uniform(0.1, 100),
+                "kernel": ["linear", "poly", "rbf", "sigmoid"],
+                "gamma": ["scale", "auto"]
+            },
+            "MLP": {
+                "hidden_layer_sizes": [(50,), (100,), (150,), (50, 50), (100, 100)],
+                "activation": ["relu", "tanh", "logistic"],
+                "solver": ["adam", "sgd"],
+                "alpha": uniform(0.0001, 0.1),
+                "learning_rate": ["constant", "invscaling", "adaptive"]
+            },
+            "DecisionTree": {
+                "criterion": ["gini", "entropy"],
+                "max_depth": randint(10, 50),
+                "min_samples_split": randint(2, 20),
+                "min_samples_leaf": randint(1, 10),
+                "max_features": [None, "auto", "sqrt", "log2"]
+            },
+            "RandomForest": {
+                "n_estimators": randint(50, 500),
+                "max_depth": randint(10, 50),
+                "min_samples_split": randint(2, 20),
+                "min_samples_leaf": randint(1, 10),
+                "max_features": ["auto", "sqrt", "log2"],
+                "bootstrap": [True, False]
+            },
+            "KNN": {
+                "n_neighbors": randint(3, 10),
+                "weights": ["uniform", "distance"],
+                "algorithm": ["auto", "ball_tree", "kd_tree", "brute"],
+                "leaf_size": randint(20, 50),
+                "p": [1, 2]
+            },
+            "LogReg": {
+                "penalty": ["l2", "l1"],
+                "C": uniform(0.1, 100),
+                "solver": ["liblinear", "saga", "newton-cg"],
+                "max_iter": [50, 100, 200]
+            },
+            "GradientBoost": {
+                "n_estimators": randint(50, 200),
+                "learning_rate": uniform(0.05, 0.2),
+                "max_depth": randint(3, 7),
+                "subsample": uniform(0.8, 1.0),
+                "min_samples_split": randint(2, 10),
+                "min_samples_leaf": randint(1, 4)
+            },
+            "XGBoost": {
+                "n_estimators": randint(50, 200),
+                "learning_rate": uniform(0.01, 0.3),
+                "max_depth": randint(3, 7),
+                "subsample": uniform(0.8, 1.0),
+                "colsample_bytree": uniform(0.8, 1.0),
+                "gamma": uniform(0, 0.2)
+            }
         }
 
-        param_random_dict = {
-            'Naive Bayes': {},
-            'SVM': {'C': uniform(0.1, 10), 'kernel': ['linear', 'rbf']},
-            'MLP': {'hidden_layer_sizes': [(50,), (100,)], 'alpha': uniform(0.0001, 0.001)},
-            'DecisionTree': {'max_depth': randint(10, 30)},
-            'KNN': {'n_neighbors': randint(3, 10)},
-            'LogReg': {'C': uniform(0.1, 10)},
-            'GradientBoost': {'n_estimators': randint(50, 200), 'learning_rate': uniform(0.01, 1)},
-            'RandomForest': {'n_estimators': randint(50, 200), 'max_depth': randint(10, 30)},
-            'XGBoost': {'n_estimators': randint(50, 200), 'learning_rate': uniform(0.01, 0.3)}
-        }
-        
         if optimization == 'Grid Search':
-            optimized_model = GridSearchCV(estimator=model_dict[model], param_grid = param_grid_dict[model], cv=5)
+            sample_size = min(5, len(param_grid_dict[model]))
+            sampled_combinations = np.random.choice(len(param_grid_dict[model]), size=sample_size, replace=False)
+            limited_param_grid = {key: [val[i] for i in sampled_combinations] for key, val in param_grid_dict[model].items()}
+            optimized_model = GridSearchCV(estimator=model_dict[model], param_grid = limited_param_grid, cv=5)
         elif optimization == 'Random Search':
             optimized_model = RandomizedSearchCV(estimator = model_dict[model], param_distributions = param_random_dict[model], n_iter=5, cv=5)
         # elif optimization == 'Genetic Algorithm':

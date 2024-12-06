@@ -26,8 +26,8 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
     private JLabel bottomLoadingLabel;
     private StringBuilder pythonOutput = new StringBuilder();
 
-    private List<String> techniques = Arrays.asList("PCA", "IncPCA", "ICA", "LDA", "SMOTE");
-    private List<String> models = Arrays.asList("SVM", "MLP", "DecisionTree", "RandomForest", "KNN", "LogReg", "GradientBoost", "XGBoost");
+    private List<String> techniques = Arrays.asList("No Technique", "PCA", "IncPCA", "ICA", "LDA");
+    private List<String> models = Arrays.asList("Naive Bayes", "SVM", "MLP", "DecisionTree", "RandomForest", "KNN", "LogReg", "GradientBoost", "XGBoost");
     private String selectedOptimization;
     private String selectedCrossValidation;
     private JFormattedTextField iterationsField;
@@ -316,20 +316,26 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
 
         // Get selected models
         List<String> selectedModels = new ArrayList<>();
-        selectedModels.add("Naive Bayes");
         for (JCheckBox checkBox : modelCheckBoxes) {
             if (checkBox.isSelected()) {
                 selectedModels.add(checkBox.getText());
             }
         }
 
+        if (selectedModels.isEmpty()){
+            selectedModels.add("Naive Bayes");
+        }
+
         // Get selected techniques
         List<String> selectedTechniques = new ArrayList<>();
-        selectedTechniques.add("no technique");
         for (JCheckBox checkBox : techniqueCheckBoxes) {
             if (checkBox.isSelected()) {
                 selectedTechniques.add(checkBox.getText());
             }
+        }
+
+        if (selectedTechniques.isEmpty()){
+            selectedTechniques.add("No Technique");
         }
         
         // Get selected number of iteractions
