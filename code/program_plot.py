@@ -39,11 +39,11 @@ def plot_all():
         filtered_data = dataset
 
         if metric in ['F1-Score', 'ROC AUC', 'Precision', 'Accuracy', 'Recall']:
-            sns.histplot(data=filtered_data, x=metric, hue='model', multiple='dodge', palette='Set1', ax=axes[row], kde=True, alpha=0.5)
+            sns.kdeplot(data=filtered_data, x=metric, hue='model', multiple='layer', palette='Set1', ax=axes[row], fill=True, bw_adjust=1, clip=(0, 1), linewidth=2, alpha=0.5)
         else:
-            sns.kdeplot(data=filtered_data, x=metric, hue='model', multiple='layer', palette='Set1', ax=axes[row], fill=False, bw_adjust=1, clip=(0, None))
+            sns.kdeplot(data=filtered_data, x=metric, hue='model', multiple='layer', palette='Set1', ax=axes[row], fill=True, bw_adjust=1, clip=(0, None), linewidth=2, alpha=0.5)
 
-        axes[row].set_title(f'Density Plot of {metric} by Model')
+        axes[row].set_title(f'{metric} by Model')
         axes[row].set_xlabel(metric)
         axes[row].set_ylabel('Frequency')
         axes[row].grid(True, linestyle='--', alpha=0.7)
@@ -55,33 +55,6 @@ def plot_all():
 
             text_content = f'Kruskal-Wallis stat: {stat_kruskal:.2f}, p: {p_value_kruskal:.2f}\nANOVA stat: {stat_anova:.2f}, p: {p_value_anova:.2f}'
 
-            '''
-            # Post-Hoc Analysis for Kruskal-Wallis 
-            if p_value_kruskal < 0.05:
-                posthoc_dunn_results = posthoc_dunn(
-                    filtered_data, val_col=metric, group_col='technique', p_adjust='bonferroni'
-                )
-                significant_pairs = [
-                    f'{index[0]} vs {index[1]}: p={value:.2f}'
-                    for index, value in posthoc_dunn_results.stack().items()
-                    if index[0] != index[1] and value < 0.05
-                ]
-                text_content += '\nDunn\'s Post-Hoc:\n' + '\n'.join(significant_pairs)
-
-            # Post-Hoc Analysis for ANOVA 
-            if p_value_anova < 0.05:
-                tukey_results = pairwise_tukeyhsd(
-                    filtered_data[metric], filtered_data['technique'], alpha=0.05
-                )
-                tukey_summary = tukey_results.summary().data[1:]  # Skip header
-                significant_pairs = [
-                    f'{row[0]} vs {row[1]}: p={row[4]:.2f}'
-                    for row in tukey_summary if row[4] < 0.05
-                ]
-                text_content += '\nTukey\'s Post-Hoc:\n' + '\n'.join(significant_pairs)
-            '''
-
-            # Add all test results to the graph
             axes[row].text(
                 0.5, y_pos, text_content,
                 fontsize=10, ha='center', va='top', transform=axes[row].transAxes,
@@ -94,11 +67,11 @@ def plot_all():
         filtered_data = dataset
 
         if metric in ['F1-Score', 'ROC AUC', 'Precision', 'Accuracy', 'Recall']:
-            sns.kdeplot(data=filtered_data, x=metric, hue='technique', multiple='layer', palette='Set2', ax=axes[row], fill=False, bw_adjust=1, clip=(0, 1))
+            sns.kdeplot(data=filtered_data, x=metric, hue='technique', multiple='layer', palette='Set2', ax=axes[row], fill=True, bw_adjust=1, clip=(0, 1), linewidth=2, alpha=0.5)
         else:
-            sns.kdeplot(data=filtered_data, x=metric, hue='technique', multiple='layer', palette='Set2', ax=axes[row], fill=False, bw_adjust=1, clip=(0, None))
+            sns.kdeplot(data=filtered_data, x=metric, hue='technique', multiple='layer', palette='Set2', ax=axes[row], fill=True, bw_adjust=1, clip=(0, None), linewidth=2, alpha=0.5)
 
-        axes[row].set_title(f'Density Plot of {metric} by Technique')
+        axes[row].set_title(f'{metric} by Technique')
         axes[row].set_xlabel(metric)
         axes[row].set_ylabel('Frequency')
         axes[row].grid(True, linestyle='--', alpha=0.7)
@@ -116,8 +89,7 @@ def plot_all():
         row += 1
 
     plt.tight_layout()
-    fig.suptitle('Results', fontsize=18, fontweight='bold')
-    fig.subplots_adjust(top=0.95, bottom=0.05, hspace=0.6)
+    fig.subplots_adjust(top=0.99, bottom=0.01, hspace=0.6)
 
     canvas = FigureCanvasAgg(fig)
     canvas.draw()

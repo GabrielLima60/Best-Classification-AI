@@ -173,7 +173,7 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
         NoSearchRadioButton.addActionListener(e -> selectedOptimization = "None");
 
         gridSearchRadioButton.setSelected(true);
-        selectedOptimization = "Grid Search";
+        selectedOptimization = "None";
         
         configPanel.add(optimizationPanel);
 
@@ -196,7 +196,7 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
         holdOutRadioButton.addActionListener(e -> selectedCrossValidation = "Hold-Out");
 
         kFoldRadioButton.setSelected(true);
-        selectedCrossValidation = "K-Fold";
+        selectedCrossValidation = "Hold-Out";
 
         configPanel.add(crossValidationPanel);
 
@@ -412,12 +412,21 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
              repaint();
 
              // Generate image
-             ProcessBuilder pb = new ProcessBuilder("python", "code\\program_plot.py");
-             pb.redirectErrorStream(true);
-             Process process = pb.start();
+             ProcessBuilder pbImage = new ProcessBuilder("python", "code\\program_plot.py");
+             pbImage.redirectErrorStream(true);
+             Process processImage = pbImage.start();
 
-             int exitCode = process.waitFor();
-            if (exitCode != 0) {
+             int exitCodeImage = processImage.waitFor();
+            if (exitCodeImage != 0) {
+                JOptionPane.showMessageDialog(this, "Error on the plot script", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+
+            ProcessBuilder pbPDF= new ProcessBuilder("python", "code\\program_save_to_pdf.py");
+            pbPDF.redirectErrorStream(true);
+             Process processPDF = pbPDF.start();
+
+             int exitCodePDF = processPDF.waitFor();
+            if (exitCodePDF != 0) {
                 JOptionPane.showMessageDialog(this, "Error on the plot script", "Error", JOptionPane.ERROR_MESSAGE);
             }
 
