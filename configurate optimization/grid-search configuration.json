@@ -1,0 +1,64 @@
+{
+    "random_search_iteractions": 10,
+    "Naive Bayes": {
+        "var_smoothing": [1e-12, 1e-9, 1e-7, 1e-5, 1e-3]
+    },
+    "SVM": {
+        "C": [1, 10, 100],
+        "kernel": ["linear", "sigmoid", "rbf", "poly"],
+        "gamma": null,
+        "degree": null,
+        "coef0": null
+    },
+    "MLP": {
+        "hidden_layer_sizes": [[150], [100, 100], [50, 50]],
+        "activation": null,
+        "alpha": [0.0001, 0.001, 0.01, 0.1],
+        "solver": null,
+        "learning_rate": null,
+        "max_iter": null
+    },
+    "DecisionTree": {
+        "max_depth": [10, 30, 50, 100],
+        "min_samples_leaf": [2, 4],
+        "max_features": null,
+        "criterion": null,
+        "splitter": null
+    },
+    "RandomForest": {
+        "n_estimators": [100, 300],
+        "max_depth": [30, 50],
+        "min_samples_leaf": [2, 4],
+        "max_features": null,
+        "bootstrap": null,
+        "criterion": null
+    },
+    "KNN": {
+        "n_neighbors": [3, 5, 10, 15],
+        "weights": ["uniform", "distance"],
+        "leaf_size": null,
+        "p": null
+    },
+    "LogReg": {
+        "penalty": null,
+        "C": [0.01, 0.1, 1, 100],
+        "max_iter": [200, 500],
+        "solver": null
+    },
+    "GradientBoost": {
+        "n_estimators": [100, 200, 500],
+        "learning_rate": [0.01, 0.1, 0.3],
+        "max_depth": null,
+        "min_samples_split": null,
+        "min_samples_leaf": null
+    },
+    "XGBoost": {
+        "n_estimators": [50, 100, 500],
+        "learning_rate": [0.01, 0.1],
+        "max_depth": [5, 10],
+        "subsample": null,
+        "colsample_bytree": null,
+        "reg_alpha": null,
+        "reg_lambda": null
+    }
+}

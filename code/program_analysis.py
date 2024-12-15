@@ -6,7 +6,7 @@ import os
 import threading
 import pandas as pd
 import numpy as np
-
+import json
 
 import xgboost as xgb
 
@@ -162,6 +162,43 @@ class PerformAnalysis:
         self.X_train = scaler.fit_transform(self.X_train)
         self.X_test = scaler.transform(self.X_test)
 
+    def load_optimization_data(self, json_file_path):
+            with open(json_file_path, 'r') as file:
+                data = json.load(file)
+
+            def process_data(data):
+                random_search_iteractions = 10
+
+                if isinstance(data, dict):
+                    for key, value in list(data.items()):
+                        # Replace None values with proper defaults
+                        if value is None:
+                            del data[key]
+                        elif isinstance(value, dict) and 'min_int' in value and 'max_int' in value:
+                            data[key] = randint(value['min_int'], value['max_int'])
+                        elif isinstance(value, dict) and 'min_float' in value and 'max_float' in value:
+                            data[key] = uniform(value['min_float'], value['max_float'])
+                        elif isinstance(value, dict):
+                            process_data(value)
+                        elif key == "hidden_layer_sizes" and isinstance(value, list):
+                            data[key] = [tuple(layer) for layer in value]
+                        elif value == "true":
+                            data[key] = True
+                        elif value == "false":
+                            data[key] = False
+                        elif key == "random_search_iteractions":
+                            random_search_iteractions = data[key]
+                            del data[key]
+
+
+                elif isinstance(data, list):
+                    for i in range(len(data)):
+                        process_data(data[i])
+
+                return data, random_search_iteractions
+            
+            return process_data(data)
+
     def select_model(self, model, optimization):
         model_dict = {'Naive Bayes': GaussianNB(),
                       'SVM': SVC(),
@@ -174,119 +211,25 @@ class PerformAnalysis:
                       'XGBoost': xgb.XGBClassifier()
                      }
         
-        param_grid_dict = {
-            "Naive Bayes": {
-                "var_smoothing": [1e-9, 1e-7, 1e-5]
-            },
-            "SVM": {
-                "C": [1, 10, 100],
-                "kernel": ["linear", "sigmoid"],
-                "gamma": ["scale", "auto"]
-            },
-            "MLP": {
-                "hidden_layer_sizes": [(50,), (150,), (100, 100)],
-                "activation": ["relu", "tanh", "logistic"],
-                "alpha": [0.001, 0.01, 0.1],
-            },
-            "DecisionTree": {
-                "max_depth": [None, 10, 30, 50],
-                "min_samples_leaf": [1, 2, 4],
-                "max_features": [None, "auto", "sqrt", "log2"]
-            },
-            "RandomForest": {
-                "n_estimators": [50, 100, 500],
-                "max_depth": [None, 10, 30],
-                "min_samples_leaf": [1, 2, 4],
-            },
-            "KNN": {
-                "n_neighbors": [3, 5, 10],
-                "weights": ["uniform", "distance"],
-                "leaf_size": [20, 30,  50],
-            },
-            "LogReg": {
-                "penalty": ["l2", "l1"],
-                "C": [0.1, 1, 10, 100],
-                "max_iter": [50, 100, 200]
-            },
-            "GradientBoost": {
-                "n_estimators": [50, 100, 200],
-                "learning_rate": [0.05, 0.1, 0.2],
-                "max_depth": [3, 5, 7],
-            },
-            "XGBoost": {
-                "n_estimators": [50, 200],
-                "learning_rate": [0.01, 0.1, 0.3],
-                "max_depth": [3, 7],
-            }
-            }
-        
-        param_random_dict = {
-            "Naive Bayes": {
-                "var_smoothing": uniform(1e-9, 1e-5)
-            },
-            "SVM": {
-                "C": uniform(0.1, 100),
-                "kernel": ["linear", "poly", "rbf", "sigmoid"],
-                "gamma": ["scale", "auto"]
-            },
-            "MLP": {
-                "hidden_layer_sizes": [(50,), (100,), (150,), (50, 50), (100, 100)],
-                "activation": ["relu", "tanh", "logistic"],
-                "solver": ["adam", "sgd"],
-                "alpha": uniform(0.0001, 0.1),
-                "learning_rate": ["constant", "invscaling", "adaptive"]
-            },
-            "DecisionTree": {
-                "criterion": ["gini", "entropy"],
-                "max_depth": randint(10, 50),
-                "min_samples_split": randint(2, 20),
-                "min_samples_leaf": randint(1, 10),
-                "max_features": [None, "auto", "sqrt", "log2"]
-            },
-            "RandomForest": {
-                "n_estimators": randint(50, 500),
-                "max_depth": randint(10, 50),
-                "min_samples_split": randint(2, 20),
-                "min_samples_leaf": randint(1, 10),
-                "max_features": ["auto", "sqrt", "log2"],
-                "bootstrap": [True, False]
-            },
-            "KNN": {
-                "n_neighbors": randint(3, 10),
-                "weights": ["uniform", "distance"],
-                "algorithm": ["auto", "ball_tree", "kd_tree", "brute"],
-                "leaf_size": randint(20, 50),
-                "p": [1, 2]
-            },
-            "LogReg": {
-                "penalty": ["l2", "l1"],
-                "C": uniform(0.1, 100),
-                "solver": ["liblinear", "saga", "newton-cg"],
-                "max_iter": [50, 100, 200]
-            },
-            "GradientBoost": {
-                "n_estimators": randint(50, 200),
-                "learning_rate": uniform(0.05, 0.2),
-                "max_depth": randint(3, 7),
-                "subsample": uniform(0.8, 1.0),
-                "min_samples_split": randint(2, 10),
-                "min_samples_leaf": randint(1, 4)
-            },
-            "XGBoost": {
-                "n_estimators": randint(50, 200),
-                "learning_rate": uniform(0.01, 0.3),
-                "max_depth": randint(3, 7),
-                "subsample": uniform(0.8, 1.0),
-                "colsample_bytree": uniform(0.8, 1.0),
-                "gamma": uniform(0, 0.2)
-            }
-        }
+       
 
         if optimization == 'Grid Search':
-            optimized_model = GridSearchCV(estimator=model_dict[model], param_grid = param_grid_dict[model])
+            try:
+                param_grid_dict, _ = self.load_optimization_data("configurate optimization\\grid-search configuration.json")
+                optimized_model = GridSearchCV(estimator=model_dict[model], param_grid = param_grid_dict)
+            except:
+                param_grid_dict, _ = self.load_optimization_data("configurate optimization\\grid-search defaults.json")
+                optimized_model = GridSearchCV(estimator=model_dict[model], param_grid = param_grid_dict)
+
+
         elif optimization == 'Random Search':
-            optimized_model = RandomizedSearchCV(estimator = model_dict[model], param_distributions = param_random_dict[model], n_iter=10)
-        # elif optimization == 'Genetic Algorithm':
+            try:
+                param_random_dict, random_search_iteractions  = self.load_optimization_data("configurate optimization\\random-search configuration.json")
+                optimized_model = RandomizedSearchCV(estimator = model_dict[model], param_distributions = param_random_dict[model], n_iter=random_search_iteractions)
+            except:
+                param_random_dict, random_search_iteractions  = self.load_optimization_data("configurate optimization\\random-search defaults.json")
+                optimized_model = RandomizedSearchCV(estimator = model_dict[model], param_distributions = param_random_dict[model], n_iter=random_search_iteractions)
+
 
         elif optimization == 'None':
             optimized_model = model_dict[model]

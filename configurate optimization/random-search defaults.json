@@ -1,0 +1,65 @@
+{
+    "random_search_iteractions": 10,
+
+    "Naive Bayes": {
+        "var_smoothing": {"min_float": 1e-12, "max_float": 1e-3}
+    },
+    "SVM": {
+        "C": {"min_int": 1, "max_int": 100},
+        "kernel": ["linear", "sigmoid", "rbf", "poly"],
+        "gamma": null,
+        "degree": null,
+        "coef0": null
+    },
+    "MLP": {
+        "hidden_layer_sizes": {"min_int": 50, "max_int": 150},
+        "activation": null,
+        "alpha": {"min_float": 0.0001, "max_float": 0.1},
+        "solver": null,
+        "learning_rate": null,
+        "max_iter": null
+    },
+    "DecisionTree": {
+        "max_depth": {"min_int": 10, "max_int": 100},
+        "min_samples_leaf": {"min_int": 2, "max_int": 4},
+        "max_features": null,
+        "criterion": null,
+        "splitter": null
+    },
+    "RandomForest": {
+        "n_estimators": {"min_int": 100, "max_int": 300},
+        "max_depth": {"min_int": 30, "max_int": 50},
+        "min_samples_leaf": {"min_int": 2, "max_int": 4},
+        "max_features": null,
+        "bootstrap": null,
+        "criterion": null
+    },
+    "KNN": {
+        "n_neighbors": {"min_int": 3, "max_int": 15},
+        "weights": ["uniform", "distance"],
+        "leaf_size": null,
+        "p": null
+    },
+    "LogReg": {
+        "penalty": null,
+        "C": {"min_float": 0.01, "max_float": 100},
+        "max_iter": {"min_int": 200, "max_int": 500},
+        "solver": null
+    },
+    "GradientBoost": {
+        "n_estimators": {"min_int": 100, "max_int": 500},
+        "learning_rate": {"min_float": 0.01, "max_float": 0.3},
+        "max_depth": null,
+        "min_samples_split": null,
+        "min_samples_leaf": null
+    },
+    "XGBoost": {
+        "n_estimators": {"min_int": 50, "max_int": 500},
+        "learning_rate": {"min_float": 0.01, "max_float": 0.1},
+        "max_depth": {"min_int": 5, "max_int": 10},
+        "subsample": null,
+        "colsample_bytree": null,
+        "reg_alpha": null,
+        "reg_lambda": null
+    }
+}
