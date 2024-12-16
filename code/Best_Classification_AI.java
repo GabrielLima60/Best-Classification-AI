@@ -18,15 +18,18 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
     private JPanel loadingPage;
     private JButton selectCSVButton;
     private JButton analyzeButton;
+    private List<JCheckBox> dataCleaningCheckBoxes;
     private List<JCheckBox> modelCheckBoxes;
     private List<JCheckBox> techniqueCheckBoxes;
     private List<JCheckBox> parameterCheckBoxes;
+    private JLabel dataCleaningLabel;
     private JLabel techniquesLabel;
     private JLabel modelsLabel;
     private JLabel topLoadingLabel;
     private JLabel bottomLoadingLabel;
     private StringBuilder pythonOutput = new StringBuilder();
 
+    private List<String> dataCleaning = Arrays.asList("Apply OneHotEncoder", "Normalize");
     private List<String> techniques = Arrays.asList("No Technique", "PCA", "IncPCA", "ICA", "LDA");
     private List<String> models = Arrays.asList("Naive Bayes", "SVM", "MLP", "DecisionTree", "RandomForest", "KNN", "LogReg", "GradientBoost", "XGBoost");
     private String selectedOptimization;
@@ -113,15 +116,31 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
         configPanel.setOpaque(false);
         configPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
+        JPanel cleaningPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        dataCleaningLabel = new JLabel("Data Cleaning:");
+        dataCleaningLabel.setFont(new Font("Lucida Sans Unicode", Font.BOLD, 26));
+        dataCleaningLabel.setForeground(new Color(0, 0, 139));
+        cleaningPanel.add(dataCleaningLabel);
+
+        dataCleaningCheckBoxes = new ArrayList<>();
+        for (String method : dataCleaning) {
+            JCheckBox checkBox = new JCheckBox(method);
+            checkBox.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 20));
+            dataCleaningCheckBoxes.add(checkBox);
+            cleaningPanel.add(checkBox);
+        }
+        configPanel.add(cleaningPanel);
+
         // Models selection panel
         JPanel modelsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         modelsLabel = new JLabel("Select Models:");
-        modelsLabel.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 28));
+        modelsLabel.setFont(new Font("Lucida Sans Unicode", Font.BOLD, 26));
+        modelsLabel.setForeground(new Color(0, 0, 139));
         modelsPanel.add(modelsLabel);
         modelCheckBoxes = new ArrayList<>();
         for (String model : models) {
             JCheckBox checkBox = new JCheckBox(model);
-            checkBox.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 22));
+            checkBox.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 20));
             modelCheckBoxes.add(checkBox);
             modelsPanel.add(checkBox);
         }
@@ -130,12 +149,13 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
         // Techniques selection panel
         JPanel techniquesPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         techniquesLabel = new JLabel("Select Techniques:");
-        techniquesLabel.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 28));
+        techniquesLabel.setFont(new Font("Lucida Sans Unicode", Font.BOLD, 26));
+        techniquesLabel.setForeground(new Color(0, 0, 139));
         techniquesPanel.add(techniquesLabel);
         techniqueCheckBoxes = new ArrayList<>();
         for (String technique : techniques) {
             JCheckBox checkBox = new JCheckBox(technique);
-            checkBox.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 22));
+            checkBox.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 20));
             techniqueCheckBoxes.add(checkBox);
             techniquesPanel.add(checkBox);
         }
@@ -144,32 +164,28 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
         // Optimization selection panel
         JPanel optimizationPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JLabel optimizationLabel = new JLabel("Optimization:");
-        optimizationLabel.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 28));
+        optimizationLabel.setFont(new Font("Lucida Sans Unicode", Font.BOLD, 26));
+        optimizationLabel.setForeground(new Color(0, 0, 139));
         optimizationPanel.add(optimizationLabel);
         JRadioButton gridSearchRadioButton = new JRadioButton("Grid Search");
-        gridSearchRadioButton.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 22));
+        gridSearchRadioButton.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 20));
         JRadioButton randomSearchRadioButton = new JRadioButton("Random Search");
-        randomSearchRadioButton.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 22));
-        //JRadioButton geneticAlgorithmRadioButton = new JRadioButton("Genetic Algorithm");
-        //geneticAlgorithmRadioButton.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 22));
+        randomSearchRadioButton.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 20));
         JRadioButton NoSearchRadioButton = new JRadioButton("None");
-        NoSearchRadioButton.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 22));
+        NoSearchRadioButton.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 20));
 
         ButtonGroup optimizationGroup = new ButtonGroup();
         optimizationGroup.add(gridSearchRadioButton);
         optimizationGroup.add(randomSearchRadioButton);
-        //optimizationGroup.add(geneticAlgorithmRadioButton);
         optimizationGroup.add(NoSearchRadioButton);
 
 
         optimizationPanel.add(gridSearchRadioButton);
         optimizationPanel.add(randomSearchRadioButton);
-        //optimizationPanel.add(geneticAlgorithmRadioButton);
         optimizationPanel.add(NoSearchRadioButton);
 
         gridSearchRadioButton.addActionListener(e -> selectedOptimization = "Grid Search");
         randomSearchRadioButton.addActionListener(e -> selectedOptimization = "Random Search");
-        //geneticAlgorithmRadioButton.addActionListener(e -> selectedOptimization = "Genetic Algorithm");
         NoSearchRadioButton.addActionListener(e -> selectedOptimization = "None");
 
         gridSearchRadioButton.setSelected(true);
@@ -180,12 +196,13 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
         // Cross Validation selection panel
         JPanel crossValidationPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JLabel crossValidationLabel = new JLabel("Cross Validation:");
-        crossValidationLabel.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 28));
+        crossValidationLabel.setFont(new Font("Lucida Sans Unicode", Font.BOLD, 26));
+        crossValidationLabel.setForeground(new Color(0, 0, 139));
         crossValidationPanel.add(crossValidationLabel);
         JRadioButton kFoldRadioButton = new JRadioButton("K-Fold");
-        kFoldRadioButton.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 22));
+        kFoldRadioButton.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 20));
         JRadioButton holdOutRadioButton = new JRadioButton("Hold-Out");
-        holdOutRadioButton.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 22));
+        holdOutRadioButton.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 20));
         ButtonGroup crossValidationGroup = new ButtonGroup();
         crossValidationGroup.add(kFoldRadioButton);
         crossValidationGroup.add(holdOutRadioButton);
@@ -203,7 +220,8 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
         // Number of iterections selection panel
         JPanel iterationsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JLabel iterationsLabel = new JLabel("Number of Iterations:");
-        iterationsLabel.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 28));
+        iterationsLabel.setFont(new Font("Lucida Sans Unicode", Font.BOLD, 26));
+        iterationsLabel.setForeground(new Color(0, 0, 139));
         NumberFormat integerFormat = NumberFormat.getIntegerInstance();
         integerFormat.setGroupingUsed(false);
         NumberFormatter numberFormatter = new NumberFormatter(integerFormat);
@@ -212,7 +230,7 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
         numberFormatter.setMaximum(999);
         numberFormatter.setAllowsInvalid(false);
         iterationsField = new JFormattedTextField(numberFormatter);
-        iterationsField.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 22));
+        iterationsField.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 20));
         iterationsField.setColumns(10);
         iterationsField.setValue(10); // Default value
         iterationsPanel.add(iterationsLabel);
@@ -224,12 +242,13 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
         // Parameters Analysed selection panel
         JPanel parametersPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JLabel parametersLabel = new JLabel("Parameters Analysed:");
-        parametersLabel.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 28));
+        parametersLabel.setFont(new Font("Lucida Sans Unicode", Font.BOLD, 26));
+        parametersLabel.setForeground(new Color(0, 0, 139));
         parametersPanel.add(parametersLabel);
         parameterCheckBoxes = new ArrayList<>();
         for (String parameter : parameters) {
             JCheckBox checkBox = new JCheckBox(parameter);
-            checkBox.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 22));
+            checkBox.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 20));
             parameterCheckBoxes.add(checkBox);
             parametersPanel.add(checkBox);
         }
@@ -271,7 +290,8 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
 
         JPanel bottomTextPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         bottomLoadingLabel = new JLabel("<html>This analysis program may take hours to finish<br/>Leave it running in the background<br/><br/>Results will be available at Best-Classification-AI/results table<br/>The graphs will be available at Best-Classification-AI/results image</html>");
-        bottomLoadingLabel.setFont(new Font("Lucida Sans Unicode", Font.PLAIN, 24));
+        bottomLoadingLabel.setFont(new Font("Lucida Sans Unicode", Font.BOLD, 26));
+        bottomLoadingLabel.setForeground(new Color(0, 0, 0));
         bottomTextPanel.add(bottomLoadingLabel);
 
         loadingPanel.add(bottomTextPanel);
@@ -314,6 +334,15 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
     }
 
     private void performAnalysis() {
+
+        // Get selected data cleaning
+        List<String> selectedDataCleaning = new ArrayList<>();
+        for (JCheckBox checkBox : dataCleaningCheckBoxes) {
+            if (checkBox.isSelected()) {
+                selectedDataCleaning.add(checkBox.getText());
+            }
+        }
+        String stringDataCleaning = String.join(", ", selectedDataCleaning);
 
         // Get selected models
         List<String> selectedModels = new ArrayList<>();
@@ -365,7 +394,7 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
         
         try {
             pythonOutput.append("technique,model," + parameters).append("\n");
-            ProcessBuilder pb_cleaning = new ProcessBuilder("python", "code\\program_data_cleaning.py", selectedFile.getAbsolutePath());
+            ProcessBuilder pb_cleaning = new ProcessBuilder("python", "code\\program_data_cleaning.py", selectedFile.getAbsolutePath(), stringDataCleaning);
             pb_cleaning.redirectErrorStream(true);
             Process process_cleaning = pb_cleaning.start();
             int exitCode_cleaning = process_cleaning.waitFor();

@@ -108,11 +108,6 @@ class PerformAnalysis:
         self.y_test = y_test
         self.y_pred = None
 
-        #if technique == 'SMOTE':
-        #    self.apply_smote()
-
-        self.apply_normalization()
-
         if technique == 'PCA':
             self.apply_pca()
         elif technique == 'IncPCA':
@@ -156,11 +151,6 @@ class PerformAnalysis:
     def apply_smote(self):
         smote = SMOTE()
         self.X_train, self.y_train = smote.fit_resample(self.X_train, self.y_train)
-
-    def apply_normalization(self):
-        scaler = StandardScaler()
-        self.X_train = scaler.fit_transform(self.X_train)
-        self.X_test = scaler.transform(self.X_test)
 
     def load_optimization_data(self, json_file_path):
             with open(json_file_path, 'r') as file:
@@ -210,8 +200,6 @@ class PerformAnalysis:
                       'GradientBoost': GradientBoostingClassifier(),
                       'XGBoost': xgb.XGBClassifier()
                      }
-        
-       
 
         if optimization == 'Grid Search':
             try:
