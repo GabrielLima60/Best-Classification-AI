@@ -6,7 +6,7 @@ The results of the analysis are provided in the program though a series of graph
 
 Run the .jar file to execute the software.
 
-# installation 
+# Installation 
 Prior to running the program, ensure the following dependencies are installed on your device:
 - Java Development Kit (JDK) and Java Runtime Environment (JRE)
 - Python 3
@@ -15,6 +15,12 @@ Additionally, install the necessary Python libraries by executing the following 
 ```
 pip install matplotlib seaborn pandas numpy scikit-learn pillow psutil imblearn xgboost reportlab
 ```
+
+# Default Data Cleaning
+Some data changes are very basic or essential for the all the models to work and are done by default, those being:
+- Removing the id column if present
+- Dropping lines with NaN
+- Applying LabelEncoder()
 
 # ATENTION
 - Your CSV must allow for supervisioned classification AIs.
