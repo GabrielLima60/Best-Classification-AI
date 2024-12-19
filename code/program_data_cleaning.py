@@ -20,8 +20,9 @@ class PrepareData:
         self.x = dataframe.iloc[:, :-1]
 
         if 'Normalize' in data_cleaning_methods:
-            scaler = StandardScaler()   
-            self.x = scaler.fit_transform(self.x)
+            numeric_cols = self.x.select_dtypes(include=['float64', 'int64']).columns
+            scaler = StandardScaler()
+            self.x[numeric_cols] = scaler.fit_transform(self.x[numeric_cols])
 
         if 'Apply OneHotEncoder' in data_cleaning_methods:
             self.x = self.identify_classification_columns_and_get_dummies(self.x)
