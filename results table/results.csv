@@ -1,10 +1,11 @@
 technique,model,F1-Score
-No Technique,Naive Bayes,0.7524907182279003
-No Technique,SVM,0.8874957810126819
-No Technique,MLP,0.9374976561181566
-No Technique,DecisionTree,0.8135825024437928
-No Technique,RandomForest,0.8774571078431372
-No Technique,KNN,0.89615669599218
-No Technique,LogReg,0.7374803105310531
-No Technique,GradientBoost,0.8749906240624062
-No Technique,XGBoost,0.9074884356930769
+No Technique,Naive Bayes,0.7598018216394755
+No Technique,Naive Bayes,0.7537503847662262
+No Technique,Naive Bayes,0.7787282179463338
+No Technique,Naive Bayes,0.745
+No Technique,Naive Bayes,0.7474115896358543
+No Technique,SVM,0.8862388013170417
+No Technique,SVM,0.878658418442744
+No Technique,SVM,0.8887494785082916
+No Technique,SVM,0.9112051837051837
+No Technique,SVM,0.8837472752841907

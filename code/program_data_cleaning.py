@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 import os
 import sys
 from sklearn.preprocessing import LabelEncoder, StandardScaler
@@ -39,7 +38,8 @@ class PrepareData:
 
     def identify_classification_columns_and_get_dummies (self, dataframe):
         potential_categorical_columns = [col for col in dataframe.columns if dataframe[col].nunique() < 10 and dataframe[col].dtype in [int, object, str]]
-        dataframe = pd.get_dummies(dataframe, columns=potential_categorical_columns)
+        if len(potential_categorical_columns) > 0:
+            dataframe = pd.get_dummies(dataframe, columns=potential_categorical_columns)
 
         return dataframe
     

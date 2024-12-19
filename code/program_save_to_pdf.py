@@ -1,4 +1,5 @@
 from PIL import Image
+import pandas as pd
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import os
@@ -49,15 +50,24 @@ def save_parts_to_pdf(parts, output_pdf_path):
     
     c.save()
 
+def csv_to_xlsx(csv_file_path, output_path):
+
+    df = pd.read_csv(csv_file_path)
+
+    df.to_excel(output_path, index=False, engine='openpyxl')
 
 def main():
     input_image_path = 'results image//graphs.png'
-    output_pdf_path = 'results image//results.pdf'  
+    output_pdf_path = 'results image//graphs.pdf'  
     part_height = 1510 
     
     parts = cut_image(input_image_path, part_height)
     save_parts_to_pdf(parts, output_pdf_path)
     #os.remove('temp_part.png')
+
+    input_csv = "results table//results.csv"
+    output_excel_csv = "results table//results.xlsx"
+    csv_to_xlsx(input_csv, output_excel_csv)
 
 if __name__ == '__main__':
     main()
