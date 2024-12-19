@@ -13,7 +13,7 @@ Prior to running the program, ensure the following dependencies are installed on
 
 Additionally, install the necessary Python libraries by executing the following command in your terminal:
 ```
-pip install matplotlib seaborn pandas numpy scikit-learn pillow psutil imblearn xgboost reportlab
+pip install matplotlib seaborn pandas numpy scikit-learn pillow psutil imblearn xgboost reportlab openpyxl
 ```
 
 # Default Data Cleaning
