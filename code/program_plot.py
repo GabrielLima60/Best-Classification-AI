@@ -89,7 +89,10 @@ def plot_all():
         row += 1
 
     plt.tight_layout()
-    fig.subplots_adjust(top=0.99, bottom=0.01, hspace=0.6)
+    if num_metrics > 3:
+        fig.subplots_adjust(top=0.99, bottom=0.01, hspace=0.6)
+    else:
+        fig.subplots_adjust(top=0.98, bottom=0.02, hspace=0.6)
 
     canvas = FigureCanvasAgg(fig)
     canvas.draw()

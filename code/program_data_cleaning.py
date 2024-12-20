@@ -24,8 +24,7 @@ class PrepareData:
             scaler = StandardScaler()
             self.x[numeric_cols] = scaler.fit_transform(self.x[numeric_cols])
 
-        if 'Apply OneHotEncoder' in data_cleaning_methods:
-            self.x = self.identify_classification_columns_and_get_dummies(self.x)
+        self.x = self.identify_classification_columns_and_get_dummies(self.x)
 
         self.y = dataframe.iloc[:, -1]
         label_encoder = LabelEncoder()

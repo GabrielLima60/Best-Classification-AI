@@ -279,25 +279,33 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
 
         JPanel loadingPanel = new JPanel(new GridLayout(0, 1));
         loadingPanel.setOpaque(false);
-        loadingPanel.setBorder(BorderFactory.createEmptyBorder(120, 80, 120, 80));
+        loadingPanel.setBorder(BorderFactory.createEmptyBorder(160, 80, 160, 80));
 
         JPanel textPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         topLoadingLabel = new JLabel("Loading...");
-        topLoadingLabel.setFont(new Font("Lucida Sans Unicode", Font.BOLD, 100));
+        topLoadingLabel.setFont(new Font("Lucida Sans Unicode", Font.BOLD, 80));
         textPanel.add(topLoadingLabel);
 
-        loadingPanel.add(textPanel);
+        //loadingPanel.add(textPanel);
 
         JPanel bottomTextPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        bottomLoadingLabel = new JLabel("<html>This analysis program may take hours to finish<br/>Leave it running in the background<br/><br/>Results will be available at Best-Classification-AI/results table<br/>The graphs will be available at Best-Classification-AI/results image</html>");
+        bottomTextPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        bottomLoadingLabel = new JLabel("<html>Loading... <br/><br/><br/>This analysis program may take hours to finish<br/>Leave it running in the background<br/><br/>Results will be available at Best-Classification-AI/results table<br/>The graphs will be available at Best-Classification-AI/results image </html>");
         bottomLoadingLabel.setFont(new Font("Lucida Sans Unicode", Font.BOLD, 26));
         bottomLoadingLabel.setForeground(new Color(0, 0, 0));
         bottomTextPanel.add(bottomLoadingLabel);
 
-        loadingPanel.add(bottomTextPanel);
+        loadingPanel.add(bottomTextPanel, BorderLayout.NORTH);
 
         backgroundLabel.add(loadingPanel, BorderLayout.CENTER);
         loadingPage.add(backgroundLabel, BorderLayout.CENTER);
+    }
+
+    private void updateLoadingLabel(int currentIteration, int totalIterations) {
+        String progressText = String.format("Iterations done: %d of %d", currentIteration, totalIterations);
+        bottomLoadingLabel.setText("<html>Loading...<br/>" + progressText + "<br/><br/>This analysis program may take hours to finish<br/>Leave it running in the background<br/><br/>Results will be available at Best-Classification-AI/results table<br/>The graphs will be available at Best-Classification-AI/results image </html>");
+        revalidate();
+        repaint(); 
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -402,23 +410,25 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
                 JOptionPane.showMessageDialog(this, "Error on the data cleaning script", "Error", JOptionPane.ERROR_MESSAGE);
             }
 
+            int numberOfAnalysDone = -1;
             for (String technique : selectedTechniques) {
                 for (String model : selectedModels) {
                     for (int i = 0; i < numberOfIterations; i++) {
 
-                        // Execute the Python script passing the CSV file path
+                        numberOfAnalysDone++;
+
+                        updateLoadingLabel(numberOfAnalysDone, numberOfIterations * selectedModels.size() * selectedTechniques.size());
+
                         ProcessBuilder pb = new ProcessBuilder("python", "code\\program_analysis.py", technique, model, selectedOptimization, selectedCrossValidation, parameters);
                         pb.redirectErrorStream(true);
                         Process process = pb.start();
 
-                        // Read the output from the Python script
                         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                         String line;
                         while ((line = reader.readLine()) != null) {
                             pythonOutput.append(line).append("\n");
                         }
 
-                        // Wait for the process to finish
                         int exitCode = process.waitFor();
                         if (exitCode != 0) {
                             JOptionPane.showMessageDialog(this, "Error on the analysis script", "Error", JOptionPane.ERROR_MESSAGE);
