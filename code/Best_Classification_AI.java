@@ -29,7 +29,7 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
     private JLabel bottomLoadingLabel;
     private StringBuilder pythonOutput = new StringBuilder();
 
-    private List<String> dataCleaning = Arrays.asList("Apply OneHotEncoder", "Normalize");
+    private List<String> dataCleaning = Arrays.asList("Normalize");
     private List<String> techniques = Arrays.asList("No Technique", "PCA", "IncPCA", "ICA", "LDA");
     private List<String> models = Arrays.asList("Naive Bayes", "SVM", "MLP", "DecisionTree", "RandomForest", "KNN", "LogReg", "GradientBoost", "XGBoost");
     private String selectedOptimization;
@@ -460,7 +460,8 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
                 JOptionPane.showMessageDialog(this, "Error on the plot script", "Error", JOptionPane.ERROR_MESSAGE);
             }
 
-            ProcessBuilder pbPDF= new ProcessBuilder("python", "code\\program_save_to_pdf.py");
+            // Save results to xlsx and graphs to pdf
+            ProcessBuilder pbPDF= new ProcessBuilder("python", "code\\program_xlsx_and_pdf.py");
             pbPDF.redirectErrorStream(true);
              Process processPDF = pbPDF.start();
 
