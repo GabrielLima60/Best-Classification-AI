@@ -14,8 +14,17 @@ class PrepareData:
             dataframe[column] = dataframe[column].apply(lambda x: pd.to_numeric(x, errors='coerce')\
                                                         if isinstance(x, str) and any(char.isdigit() for char in x) else x)
 
+        if 'Imputação da Média em Valores Faltantes' in data_cleaning_methods:
+            dataframe = self.impute_missing_values(dataframe)
 
-        dataframe = dataframe.dropna()
+        else:
+            dataframe = dataframe.dropna()
+
+        if 'Remover dados duplicados' in data_cleaning_methods:
+            dataframe.drop_duplicates()
+
+        if 'Remoção de Colinearidade' in data_cleaning_methods:
+            dataframe = self.remove_high_correlation(dataframe)
 
         self.x = dataframe.iloc[:, :-1]
 
@@ -47,6 +56,20 @@ class PrepareData:
         file_path = os.path.join("resources", "cleaned_data.csv")
         dataframe.to_csv(file_path, index=False)
   
+    def impute_missing_values(self, dataframe):
+        for col in dataframe.columns:
+            if dataframe[col].dtype in ['float64', 'int64']:
+                dataframe[col].fillna(dataframe[col].median(), inplace=True)
+            else:
+                dataframe[col].fillna(dataframe[col].mode()[0], inplace=True)
+        return dataframe
+
+    def remove_high_correlation(self, dataframe, threshold=0.9):
+        corr_matrix = dataframe.corr().abs()
+        upper_triangle = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
+        to_drop = [column for column in upper_triangle.columns if any(upper_triangle[column] > threshold)]
+        dataframe.drop(to_drop, axis=1, inplace=True)
+        return dataframe
 
 # MAIN
 

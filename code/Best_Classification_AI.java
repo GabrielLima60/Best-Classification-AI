@@ -29,7 +29,7 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
     private JLabel bottomLoadingLabel;
     private StringBuilder pythonOutput = new StringBuilder();
 
-    private List<String> dataCleaning = Arrays.asList("Normalize");
+    private List<String> dataCleaning = Arrays.asList("Normalize", "Mean Imputation for Missing Values", "Remove Duplicate Data", "Collinearity Removal");
     private List<String> techniques = Arrays.asList("No Technique", "PCA", "IncPCA", "ICA", "LDA");
     private List<String> models = Arrays.asList("Naive Bayes", "SVM", "MLP", "DecisionTree", "RandomForest", "KNN", "LogReg", "GradientBoost", "XGBoost");
     private String selectedOptimization;
