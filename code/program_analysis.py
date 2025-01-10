@@ -22,7 +22,6 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.naive_bayes import GaussianNB
 
-from imblearn.over_sampling import SMOTE
 from sklearn.decomposition import PCA, IncrementalPCA, FastICA
 
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
@@ -137,7 +136,7 @@ class PerformAnalysis:
         self.X_test = ipca.transform(self.X_test)
 
     def apply_ica(self):
-        n_components = int(self.X_train.shape[1]//2)
+        n_components = int(self.X_train.shape[1]*0.80)
         ica = FastICA(n_components=n_components)
         self.X_train = ica.fit_transform(self.X_train)
         self.X_test = ica.transform(self.X_test)
@@ -147,10 +146,6 @@ class PerformAnalysis:
         self.X_train = lda.fit_transform(self.X_train, self.y_train)
 
         self.X_test = lda.transform(self.X_test)
-
-    def apply_smote(self):
-        smote = SMOTE()
-        self.X_train, self.y_train = smote.fit_resample(self.X_train, self.y_train)
 
     def load_optimization_data(self, json_file_path):
             with open(json_file_path, 'r') as file:
@@ -192,7 +187,7 @@ class PerformAnalysis:
     def select_model(self, model, optimization):
         model_dict = {'Naive Bayes': GaussianNB(),
                       'SVM': SVC(),
-                      'MLP': MLPClassifier(hidden_layer_sizes=(128, 64, 32)),
+                      'MLP': MLPClassifier(hidden_layer_sizes=(100, 50, 25)),
                       'DecisionTree': DecisionTreeClassifier(),
                       'RandomForest': RandomForestClassifier(n_jobs=-1),
                       'KNN': KNeighborsClassifier(),

@@ -11,7 +11,7 @@
         "coef0": null
     },
     "MLP": {
-        "hidden_layer_sizes": [[150], [100, 100], [50, 50]],
+        "hidden_layer_sizes": [[100, 100], [50, 50], [150, 100, 50]],
         "activation": null,
         "alpha": [0.0001, 0.001, 0.01, 0.1],
         "solver": null,

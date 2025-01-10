@@ -38,15 +38,12 @@ def save_parts_to_pdf(parts, output_pdf_path):
     for idx, part in enumerate(parts):
         part_width, part_height = part.size 
         
-        # Save each part as a unique temporary image file
         part_path = f"temp_part_{idx}.png"
-        part.save(part_path)  # Save part as a temporary image file
+        part.save(part_path)  
         
-        # Place the image on the PDF page
         c.drawImage(part_path, 0, 0, width=part_width / 2, height=part_height / 2)
-        c.showPage()  # Move to the next page after drawing the image
+        c.showPage()  
         
-        # Delete the temporary part image after it's added to the PDF
         os.remove(part_path)
     
     c.save()

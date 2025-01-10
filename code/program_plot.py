@@ -25,26 +25,28 @@ def plot_all():
     # Box Plots by Technique and Model
     for i, metric in enumerate(metrics):
         filtered_data = dataset
-        
+        title = metric + ' (MB)' if metric == 'Memory Usage' else metric + ' (seconds)' if metric == 'Processing Time' else metric
+
         sns.boxplot(ax=axes[row], x='model', y=metric, hue='technique', data=filtered_data, palette='Set2', showfliers=False)
-        axes[row].set_title(f'{metric} by Technique and Model')
+        axes[row].set_title(f'{title} by Technique and Model')
         axes[row].grid(True, axis='y', linestyle='--', alpha=0.7)
         axes[row].set_xlabel('Model')
-        axes[row].set_ylabel(metric + ' (MB)' if metric == 'Memory Usage' else metric + ' (seconds)' if metric == 'Processing Time' else metric)
+        axes[row].set_ylabel(title)
         axes[row].legend(title='Technique')
         row += 1
 
-    # Histograms by Model
+    # Kernel Linear Density plots by Model
     for metric in metrics:
         filtered_data = dataset
+        title = metric + ' (MB)' if metric == 'Memory Usage' else metric + ' (seconds)' if metric == 'Processing Time' else metric
 
         if metric in ['F1-Score', 'ROC AUC', 'Precision', 'Accuracy', 'Recall']:
             sns.kdeplot(data=filtered_data, x=metric, hue='model', multiple='layer', palette='Set1', ax=axes[row], fill=True, bw_adjust=1, clip=(0, 1), linewidth=2, alpha=0.5)
         else:
             sns.kdeplot(data=filtered_data, x=metric, hue='model', multiple='layer', palette='Set1', ax=axes[row], fill=True, bw_adjust=1, clip=(0, None), linewidth=2, alpha=0.5)
 
-        axes[row].set_title(f'{metric} by Model')
-        axes[row].set_xlabel(metric)
+        axes[row].set_title(f'{title} by Model')
+        axes[row].set_xlabel(title)
         axes[row].set_ylabel('Frequency')
         axes[row].grid(True, linestyle='--', alpha=0.7)
         groups = [filtered_data[filtered_data['model'] == model][metric] for model in filtered_data['model'].unique()]
@@ -62,17 +64,18 @@ def plot_all():
             )
         row += 1
 
-    # Histograms by Technique
+    # Kernel Linear Density plots by Technique
     for metric in metrics:
         filtered_data = dataset
+        title = metric + ' (MB)' if metric == 'Memory Usage' else metric + ' (seconds)' if metric == 'Processing Time' else metric
 
         if metric in ['F1-Score', 'ROC AUC', 'Precision', 'Accuracy', 'Recall']:
             sns.kdeplot(data=filtered_data, x=metric, hue='technique', multiple='layer', palette='Set2', ax=axes[row], fill=True, bw_adjust=1, clip=(0, 1), linewidth=2, alpha=0.5)
         else:
             sns.kdeplot(data=filtered_data, x=metric, hue='technique', multiple='layer', palette='Set2', ax=axes[row], fill=True, bw_adjust=1, clip=(0, None), linewidth=2, alpha=0.5)
 
-        axes[row].set_title(f'{metric} by Technique')
-        axes[row].set_xlabel(metric)
+        axes[row].set_title(f'{title} by Technique')
+        axes[row].set_xlabel(title)
         axes[row].set_ylabel('Frequency')
         axes[row].grid(True, linestyle='--', alpha=0.7)
         groups = [filtered_data[filtered_data['technique'] == technique][metric] for technique in filtered_data['technique'].unique()]
@@ -89,8 +92,12 @@ def plot_all():
         row += 1
 
     plt.tight_layout()
-    if num_metrics > 3:
+    if num_metrics == 3:
         fig.subplots_adjust(top=0.99, bottom=0.01, hspace=0.6)
+    elif num_metrics == 2:
+        fig.subplots_adjust(top=0.96, bottom=0.04, hspace=0.6)
+    elif num_metrics == 1:
+        fig.subplots_adjust(top=0.93, bottom=0.07, hspace=0.6)
     else:
         fig.subplots_adjust(top=0.98, bottom=0.02, hspace=0.6)
 
