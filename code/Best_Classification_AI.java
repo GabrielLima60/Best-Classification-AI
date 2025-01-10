@@ -467,7 +467,7 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
 
              int exitCodePDF = processPDF.waitFor();
             if (exitCodePDF != 0) {
-                JOptionPane.showMessageDialog(this, "Error on the plot script", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Error on the saving results script", "Error", JOptionPane.ERROR_MESSAGE);
             }
 
             // Show returned image

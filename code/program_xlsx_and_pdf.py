@@ -1,4 +1,5 @@
 from PIL import Image
+import numpy as np
 import pandas as pd
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas

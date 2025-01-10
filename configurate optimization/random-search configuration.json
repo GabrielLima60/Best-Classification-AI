@@ -12,11 +12,9 @@
         "coef0": null
     },
     "MLP": {
-        "hidden_layer_sizes": {"min_int": 50, "max_int": 150},
         "activation": null,
         "alpha": {"min_float": 0.0001, "max_float": 0.1},
         "solver": null,
-        "learning_rate": null,
         "max_iter": null
     },
     "DecisionTree": {

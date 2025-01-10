@@ -192,7 +192,7 @@ class PerformAnalysis:
     def select_model(self, model, optimization):
         model_dict = {'Naive Bayes': GaussianNB(),
                       'SVM': SVC(),
-                      'MLP': MLPClassifier(),
+                      'MLP': MLPClassifier(hidden_layer_sizes=(128, 64, 32)),
                       'DecisionTree': DecisionTreeClassifier(),
                       'RandomForest': RandomForestClassifier(n_jobs=-1),
                       'KNN': KNeighborsClassifier(),
@@ -204,15 +204,19 @@ class PerformAnalysis:
         if optimization == 'Grid Search':
             try:
                 param_grid_dict, _ = self.load_optimization_data("configurate optimization\\grid-search configuration.json")
-                optimized_model = GridSearchCV(estimator=model_dict[model], param_grid = param_grid_dict)
+                if model not in param_grid_dict:
+                    raise Exception
+                optimized_model = GridSearchCV(estimator=model_dict[model], param_grid = param_grid_dict[model])
             except:
                 param_grid_dict, _ = self.load_optimization_data("configurate optimization\\grid-search defaults.json")
-                optimized_model = GridSearchCV(estimator=model_dict[model], param_grid = param_grid_dict)
+                optimized_model = GridSearchCV(estimator=model_dict[model], param_grid = param_grid_dict[model])
 
 
         elif optimization == 'Random Search':
             try:
                 param_random_dict, random_search_iteractions  = self.load_optimization_data("configurate optimization\\random-search configuration.json")
+                if model not in param_random_dict:
+                    raise Exception
                 optimized_model = RandomizedSearchCV(estimator = model_dict[model], param_distributions = param_random_dict[model], n_iter=random_search_iteractions)
             except:
                 param_random_dict, random_search_iteractions  = self.load_optimization_data("configurate optimization\\random-search defaults.json")
