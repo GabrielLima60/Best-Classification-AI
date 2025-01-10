@@ -226,7 +226,8 @@ class PerformAnalysis:
                 param_grid_dict, _ = self.load_optimization_data("configurate optimization\\grid-search defaults.json")
                 if model not in param_grid_dict:
                      optimized_model = model_dict[model]
-                optimized_model = GridSearchCV(estimator=model_dict[model], param_grid = param_grid_dict[model])
+                else:
+                    optimized_model = GridSearchCV(estimator=model_dict[model], param_grid = param_grid_dict[model])
 
 
         elif optimization == 'Random Search':
