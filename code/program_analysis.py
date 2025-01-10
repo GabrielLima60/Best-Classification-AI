@@ -7,6 +7,8 @@ import threading
 import pandas as pd
 import numpy as np
 import json
+import ast
+import importlib.util
 
 import xgboost as xgb
 
@@ -185,6 +187,23 @@ class PerformAnalysis:
             return process_data(data)
 
     def select_model(self, model, optimization):
+        def find_first_class(file_path):
+            with open(file_path, "r") as file:
+                tree = ast.parse(file.read(), filename=file_path)
+                for node in ast.iter_child_nodes(tree):
+                    if isinstance(node, ast.ClassDef):
+                        return node.name  # Return the name of the first class found
+            return None
+        def load_class_from_file(file_path, class_name):
+            spec = importlib.util.spec_from_file_location("module.name", file_path)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return getattr(module, class_name)
+        
+        if model == "Custom AI Model":
+            class_name = find_first_class("custom AI model\\custom AI model.py")
+            user_model = load_class_from_file("custom AI model\\custom AI model.py", class_name)
+
         model_dict = {'Naive Bayes': GaussianNB(),
                       'SVM': SVC(),
                       'MLP': MLPClassifier(hidden_layer_sizes=(100, 50, 25)),
@@ -193,7 +212,8 @@ class PerformAnalysis:
                       'KNN': KNeighborsClassifier(),
                       'LogReg': LogisticRegression(),
                       'GradientBoost': GradientBoostingClassifier(),
-                      'XGBoost': xgb.XGBClassifier()
+                      'XGBoost': xgb.XGBClassifier(),
+                      'Custom AI Model': user_model()
                      }
 
         if optimization == 'Grid Search':
@@ -204,6 +224,8 @@ class PerformAnalysis:
                 optimized_model = GridSearchCV(estimator=model_dict[model], param_grid = param_grid_dict[model])
             except:
                 param_grid_dict, _ = self.load_optimization_data("configurate optimization\\grid-search defaults.json")
+                if model not in param_grid_dict:
+                     optimized_model = model_dict[model]
                 optimized_model = GridSearchCV(estimator=model_dict[model], param_grid = param_grid_dict[model])
 
 
@@ -215,7 +237,11 @@ class PerformAnalysis:
                 optimized_model = RandomizedSearchCV(estimator = model_dict[model], param_distributions = param_random_dict[model], n_iter=random_search_iteractions)
             except:
                 param_random_dict, random_search_iteractions  = self.load_optimization_data("configurate optimization\\random-search defaults.json")
-                optimized_model = RandomizedSearchCV(estimator = model_dict[model], param_distributions = param_random_dict[model], n_iter=random_search_iteractions)
+                if model not in param_random_dict:
+                    optimized_model = model_dict[model]
+                else:
+                    optimized_model = RandomizedSearchCV(estimator = model_dict[model], param_distributions = param_random_dict[model], n_iter=random_search_iteractions)
+                
 
 
         elif optimization == 'None':

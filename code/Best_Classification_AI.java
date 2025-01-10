@@ -31,7 +31,7 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
 
     private List<String> dataCleaning = Arrays.asList("Normalize", "Mean Imputation for Missing Values", "Remove Duplicate Data", "Collinearity Removal");
     private List<String> techniques = Arrays.asList("No Technique", "PCA", "IncPCA", "ICA", "LDA");
-    private List<String> models = Arrays.asList("Naive Bayes", "SVM", "MLP", "DecisionTree", "RandomForest", "KNN", "LogReg", "GradientBoost", "XGBoost");
+    private List<String> models = Arrays.asList("Naive Bayes", "SVM", "MLP", "DecisionTree", "RandomForest", "KNN", "LogReg", "GradientBoost", "XGBoost", "Custom AI Model");
     private String selectedOptimization;
     private String selectedCrossValidation;
     private JFormattedTextField iterationsField;
