@@ -202,7 +202,7 @@ class PerformAnalysis:
         
         model_dict = {'Naive Bayes': GaussianNB(),
                       'SVM': SVC(),
-                      'MLP': MLPClassifier(n_iter_no_change=500),
+                      'MLP': MLPClassifier(n_iter_no_change=500, ),
                       'DecisionTree': DecisionTreeClassifier(),
                       'RandomForest': RandomForestClassifier(n_jobs=-1),
                       'KNN': KNeighborsClassifier(),

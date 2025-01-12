@@ -9,6 +9,9 @@ import java.util.Arrays;
 import java.util.List;
 import javax.swing.text.NumberFormatter;
 import java.text.NumberFormat;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 
 public class Best_Classification_AI extends JFrame implements ActionListener {
     private JFileChooser fileChooser;
@@ -28,6 +31,9 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
     private JLabel topLoadingLabel;
     private JLabel bottomLoadingLabel;
     private StringBuilder pythonOutput = new StringBuilder();
+    private static final String LOCK_FILE_PATH = "program.lock";
+    private static RandomAccessFile lockFile;
+    private static FileLock lock;
 
     private List<String> dataCleaning = Arrays.asList("Normalize", "Mean Imputation for Missing Values", "Remove Duplicate Data", "Collinearity Removal");
     private List<String> techniques = Arrays.asList("No Technique", "PCA", "IncPCA", "ICA", "LDA");
@@ -91,7 +97,8 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
     }
 
     private void handleWindowClosing() {
-        // Check if the cleaned data file exists and delete it if present
+        releaseLock();
+
         Path filePath = Paths.get("resources\\cleaned_data.csv");
         try {
             if (Files.exists(filePath)) {
@@ -525,6 +532,35 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
     }
 
     public static void main(String[] args) {
+        if (!acquireLock()) {
+            JOptionPane.showMessageDialog(null, 
+                "The application is already running.", 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+            System.exit(1);
+        }
+
         SwingUtilities.invokeLater(Best_Classification_AI::new);
+    }
+
+    private static boolean acquireLock() {
+        try {
+            lockFile = new RandomAccessFile(LOCK_FILE_PATH, "rw");
+            FileChannel channel = lockFile.getChannel();
+            lock = channel.tryLock();
+            return lock != null;
+        } catch (OverlappingFileLockException | IOException e) {
+            return false;
+        }
+    }
+
+    private static void releaseLock() {
+        try {
+            if (lock != null) lock.release();
+            if (lockFile != null) lockFile.close();
+            new File(LOCK_FILE_PATH).delete();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
