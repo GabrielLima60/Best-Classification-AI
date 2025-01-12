@@ -5,8 +5,6 @@ import seaborn as sns
 import pandas as pd
 from scipy.stats import kruskal
 from scipy.stats import f_oneway
-from statsmodels.stats.multicomp import pairwise_tukeyhsd
-from scikit_posthocs import posthoc_dunn
 from PIL import Image
 
 def plot_all():
@@ -50,7 +48,7 @@ def plot_all():
         axes[row].set_ylabel('Frequency')
         axes[row].grid(True, linestyle='--', alpha=0.7)
         groups = [filtered_data[filtered_data['model'] == model][metric] for model in filtered_data['model'].unique()]
-        if len(groups) > 1:
+        if len(groups) > 1 and groups[0].size > 3:
             stat_kruskal, p_value_kruskal = kruskal(*groups)
             stat_anova, p_value_anova = f_oneway(*groups)
             y_pos = axes[row].get_ylim()[0] - 0.2
@@ -79,7 +77,7 @@ def plot_all():
         axes[row].set_ylabel('Frequency')
         axes[row].grid(True, linestyle='--', alpha=0.7)
         groups = [filtered_data[filtered_data['technique'] == technique][metric] for technique in filtered_data['technique'].unique()]
-        if len(groups) > 1:
+        if len(groups) > 1 and groups[0].size > 3:
             stat_kruskal, p_value_kruskal = kruskal(*groups)
             stat_anova, p_value_anova = f_oneway(*groups)
             y_pos = axes[row].get_ylim()[0] - 0.2

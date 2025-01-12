@@ -1,2 +1,3 @@
 technique,model,F1-Score
-No Technique,Custom AI Model,0.9665831244778613
+No Technique,Custom AI Model,1.0
+PCA,Custom AI Model,0.933249791144528

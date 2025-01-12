@@ -5,25 +5,23 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import os
 
-# Function to cut the PNG image into horizontal parts based on the height of each part
 def cut_image(input_image_path, part_height):
     # Open the image using PIL
     img = Image.open(input_image_path)
     width, height = img.size
     
-    num_parts = height // part_height  # Calculate number of parts
-    remainder = height % part_height  # Check if there is any remainder for the last part
+    num_parts = height // part_height 
+    remainder = height % part_height  
     
     parts = []
     for i in range(num_parts):
         top = i * part_height
         bottom = (i + 1) * part_height
         
-        # Slice the image horizontally
         part = img.crop((0, top, width, bottom))
         parts.append(part)
     
-    if remainder > 0:  # If there's leftover height, add the final part
+    if remainder > 0:  
         top = num_parts * part_height
         bottom = height
         part = img.crop((0, top, width, bottom))
@@ -31,7 +29,6 @@ def cut_image(input_image_path, part_height):
     
     return parts
 
-# Function to save the sliced parts into a PDF
 def save_parts_to_pdf(parts, output_pdf_path):
     c = canvas.Canvas(output_pdf_path, pagesize=letter)
 
@@ -52,7 +49,24 @@ def csv_to_xlsx(csv_file_path, output_path):
 
     df = pd.read_csv(csv_file_path)
 
+    numeric_cols = df.select_dtypes(include=[np.number]).columns
+
+    grouped = df.groupby(df.select_dtypes(exclude=[np.number]).columns.tolist()).agg({
+        col: ["mean", "std"] for col in numeric_cols
+    })
+
+    grouped.columns = ['_'.join(col).strip() for col in grouped.columns]
+
+    for col in numeric_cols:
+        mean_col = f"{col}_mean"
+        std_col = f"{col}_std"
+        grouped[f"{col} ±"] = grouped[mean_col].round(2).astype(str) + " ± " + grouped[std_col].round(2).astype(str)
+        grouped.drop(columns=[mean_col, std_col], inplace=True)
+
+    grouped.reset_index(inplace=True)
+
     df.to_excel(output_path, index=False, engine='openpyxl')
+    grouped.to_excel("results table//resumed results.xlsx", index=False, engine='openpyxl')
 
 def main():
     input_image_path = 'results image//graphs.png'
@@ -61,7 +75,6 @@ def main():
     
     parts = cut_image(input_image_path, part_height)
     save_parts_to_pdf(parts, output_pdf_path)
-    #os.remove('temp_part.png')
 
     input_csv = "results table//results.csv"
     output_excel_csv = "results table//results.xlsx"

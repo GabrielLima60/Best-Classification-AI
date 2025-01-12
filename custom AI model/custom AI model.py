@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 
 class NaiveBayes:
     def __init__(self):
@@ -9,9 +8,6 @@ class NaiveBayes:
         self.var = None
 
     def fit(self, X, y):
-        X = X.to_numpy() if isinstance(X, pd.Series) else X
-        y = y.to_numpy() if isinstance(y, pd.Series) else y
-        
         self.classes = np.unique(y)
         n_samples, n_features = X.shape
         n_classes = len(self.classes)
@@ -34,7 +30,6 @@ class NaiveBayes:
         return numerator / denominator
 
     def predict_proba(self, X):
-        X = X.to_numpy() if isinstance(X, pd.Series) else X
         n_samples = X.shape[0]
         n_classes = len(self.classes)
         probs = np.zeros((n_samples, n_classes))
@@ -42,12 +37,11 @@ class NaiveBayes:
         for i in range(n_samples):
             for idx, cls in enumerate(self.classes):
                 class_prior = np.log(self.class_prior[idx])
-                conditional = np.sum(np.log(self._gaussian_probability(idx, X.iloc[i])))
+                conditional = np.sum(np.log(self._gaussian_probability(idx, X[i])))
                 probs[i, idx] = class_prior + conditional
 
         return np.exp(probs) / np.sum(np.exp(probs), axis=1, keepdims=True)
 
     def predict(self, X):
-        X = X.to_numpy() if isinstance(X, pd.Series) else X
         probs = self.predict_proba(X)
-        return pd.Series(self.classes[np.argmax(probs, axis=1)], index=X.index)
+        return self.classes[np.argmax(probs, axis=1)]

@@ -81,8 +81,32 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
         pack();
         setLocationRelativeTo(null);
         setVisible(true);
+
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                handleWindowClosing();
+            }
+        });
     }
 
+    private void handleWindowClosing() {
+        // Check if the cleaned data file exists and delete it if present
+        Path filePath = Paths.get("resources\\cleaned_data.csv");
+        try {
+            if (Files.exists(filePath)) {
+                Files.delete(filePath);
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error deleting cleaned data file: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
+        // Dispose of the frame and exit
+        dispose();
+        System.exit(0);
+    }
+    
     private void createCSVSelectionPage() {
         csvSelectionPage = new JPanel();
         csvSelectionPage.setLayout(new BorderLayout());
@@ -431,6 +455,8 @@ public class Best_Classification_AI extends JFrame implements ActionListener {
 
                         int exitCode = process.waitFor();
                         if (exitCode != 0) {
+                            //Path filePath = Paths.get("resources\\cleaned_data.csv");
+                            //Files.delete(filePath);
                             JOptionPane.showMessageDialog(this, "Error on the analysis script", "Error", JOptionPane.ERROR_MESSAGE);
                             //System.exit(0);
                         }

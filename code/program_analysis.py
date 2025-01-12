@@ -103,10 +103,10 @@ class PerformAnalysis:
     '''
     def __init__(self, technique, model, optimization, X_train, X_test, y_train, y_test):
 
-        self.X_train = X_train
-        self.X_test = X_test
-        self.y_train = y_train
-        self.y_test = y_test
+        self.X_train = X_train.to_numpy()
+        self.X_test = X_test.to_numpy()
+        self.y_train = y_train.to_numpy()
+        self.y_test = y_test.to_numpy()
         self.y_pred = None
 
         if technique == 'PCA':
@@ -200,21 +200,22 @@ class PerformAnalysis:
             spec.loader.exec_module(module)
             return getattr(module, class_name)
         
-        if model == "Custom AI Model":
-            class_name = find_first_class("custom AI model\\custom AI model.py")
-            user_model = load_class_from_file("custom AI model\\custom AI model.py", class_name)
-
         model_dict = {'Naive Bayes': GaussianNB(),
                       'SVM': SVC(),
-                      'MLP': MLPClassifier(hidden_layer_sizes=(100, 50, 25)),
+                      'MLP': MLPClassifier(n_iter_no_change=500),
                       'DecisionTree': DecisionTreeClassifier(),
                       'RandomForest': RandomForestClassifier(n_jobs=-1),
                       'KNN': KNeighborsClassifier(),
                       'LogReg': LogisticRegression(),
                       'GradientBoost': GradientBoostingClassifier(),
-                      'XGBoost': xgb.XGBClassifier(),
-                      'Custom AI Model': user_model()
+                      'XGBoost': xgb.XGBClassifier()
                      }
+
+        if model == "Custom AI Model":
+            class_name = find_first_class("custom AI model\\custom AI model.py")
+            user_model = load_class_from_file("custom AI model\\custom AI model.py", class_name)
+            model_dict["Custom AI Model"] = user_model()
+
 
         if optimization == 'Grid Search':
             try:
