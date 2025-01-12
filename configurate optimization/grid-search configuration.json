@@ -13,9 +13,9 @@
     "MLP": {
         "hidden_layer_sizes": [[100, 100], [50, 50], [150, 100, 50]],
         "activation": null,
-        "alpha": [0.0001, 0.001, 0.01, 0.1],
+        "alpha": null,
         "solver": null,
-        "learning_rate": null,
+        "learning_rate": [300, 400, 500],
         "max_iter": null
     },
     "DecisionTree": {
