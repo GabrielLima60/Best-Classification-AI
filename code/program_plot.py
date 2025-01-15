@@ -90,6 +90,9 @@ def plot_all():
         row += 1
 
     plt.tight_layout()
+
+    if num_metrics == 6:
+        fig.subplots_adjust(top=1, bottom=0.0, hspace=0.6)
     if num_metrics == 3:
         fig.subplots_adjust(top=0.99, bottom=0.01, hspace=0.6)
     elif num_metrics == 2:

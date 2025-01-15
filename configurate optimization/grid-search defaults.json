@@ -15,8 +15,8 @@
         "activation": null,
         "alpha": null,
         "solver": null,
-        "learning_rate": [200, 300, 400],
-        "max_iter": null
+        "learning_rate": null,
+        "max_iter": [300, 400, 500]
     },
     "DecisionTree": {
         "max_depth": [10, 30, 50, 100],
